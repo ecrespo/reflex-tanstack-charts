@@ -1,178 +1,178 @@
 # Tasks — reflex-tanstack-charts v0.1.0
 
-> Specs de origen: `specs/prd/reflex-tanstack-charts.md` · `specs/api/component-api-v1.md`
+> Source specs: `specs/prd/reflex-tanstack-charts.md` · `specs/api/component-api-v1.md`
 > · `specs/technical/architecture.md` · `specs/data-model/chartspec-schema.md`
 > · `specs/plans/implementation-plan.md`
-> Fases que cubre: F1–F4 completas · Generado: 2026-08-07
+> Phases covered: F1–F4 complete · Generated: 2026-08-07
 
-## Convenciones de este archivo
+## Conventions for this file
 
-- Orden = orden de ejecución salvo [P].
-- Estados: `[ ]` pendiente · `[~]` en curso · `[x] {fecha}` hecha · `[!]` bloqueada (nota).
-- **Primera tanda supervisada: T-001..T-005** (el spike). Revisar antes de escalar.
+- Order = execution order except for [P].
+- States: `[ ]` pending · `[~]` in progress · `[x] {date}` done · `[!]` blocked (note).
+- **First supervised batch: T-001..T-005** (the spike). Review before scaling up.
 
-## Tareas
+## Tasks
 
-### T-001 · Scaffolding del custom component `[x] 2026-08-07`
-- **Qué**: estructura de `reflex component init` adaptada al repo existente: `pyproject.toml` (nombre `reflex-tanstack-charts`, Apache-2.0, `requires-python >=3.12`, dep `reflex>=0.8`, build backend compatible uv), `custom_components/reflex_tanstack_charts/__init__.py`, carpeta demo `tanstack_charts_demo/`.
+### T-001 · Custom component scaffolding `[x] 2026-08-07`
+- **What**: `reflex component init` structure adapted to the existing repo: `pyproject.toml` (name `reflex-tanstack-charts`, Apache-2.0, `requires-python >=3.12`, dep `reflex>=0.8`, uv-compatible build backend), `custom_components/reflex_tanstack_charts/__init__.py`, demo folder `tanstack_charts_demo/`.
 - **REQ**: REQ-CH-019
-- **Archivos**: `pyproject.toml`, `custom_components/reflex_tanstack_charts/*`, `tanstack_charts_demo/*`
-- **Depende de**: —
+- **Files**: `pyproject.toml`, `custom_components/reflex_tanstack_charts/*`, `tanstack_charts_demo/*`
+- **Depends on**: —
 - **Done**: `uv sync && uv run python -c "import reflex_tanstack_charts"` OK (editable).
 
-### T-002 · Fijar trío de versiones npm (GATE) `[x] 2026-08-07`
-- **Qué**: consultar npm y fijar versiones exactas compatibles de `@tanstack/charts`, `@tanstack/charts-scales`, `@tanstack/react-charts`, `d3-scale`; documentarlas en constante `LIB_DEPENDENCIES` y en Tech Design (cerrar pregunta abierta 1).
+### T-002 · Pin the npm version trio (GATE) `[x] 2026-08-07`
+- **What**: query npm and pin the exact compatible versions of `@tanstack/charts`, `@tanstack/charts-scales`, `@tanstack/react-charts`, `d3-scale`; document them in the `LIB_DEPENDENCIES` constant and in the Tech Design (close open question 1).
 - **REQ**: REQ-CH-020
-- **Archivos**: `custom_components/reflex_tanstack_charts/component.py`, `specs/technical/architecture.md`
-- **Depende de**: —  [P] con T-001
-- **Done**: `npm view @tanstack/react-charts@<ver> peerDependencies` coherente con los pins; nota escrita en Tech Design §10.
+- **Files**: `custom_components/reflex_tanstack_charts/component.py`, `specs/technical/architecture.md`
+- **Depends on**: —  [P] with T-001
+- **Done**: `npm view @tanstack/react-charts@<ver> peerDependencies` consistent with the pins; note written in Tech Design §10.
 
-### T-003 · Componente Python mínimo `[x] 2026-08-07`
-- **Qué**: `TanStackChart(rx.Component)` con `library = "$/public" + rx.asset("TanStackChartBridge.jsx", shared=True)`, `tag="TanStackChartBridge"`, `lib_dependencies` (T-002), props `spec: rx.Var[dict]`, `height`, `aria_label`; función `tanstack_chart()` con validación `INVALID_MARKS`.
+### T-003 · Minimal Python component `[x] 2026-08-07`
+- **What**: `TanStackChart(rx.Component)` with `library = "$/public" + rx.asset("TanStackChartBridge.jsx", shared=True)`, `tag="TanStackChartBridge"`, `lib_dependencies` (T-002), props `spec: rx.Var[dict]`, `height`, `aria_label`; `tanstack_chart()` function with `INVALID_MARKS` validation.
 - **REQ**: REQ-CH-001
-- **Depende de**: T-001, T-002
-- **Done**: `uv run pytest tests/test_component.py::test_req_ch_001_component_compiles` verde.
+- **Depends on**: T-001, T-002
+- **Done**: `uv run pytest tests/test_component.py::test_req_ch_001_component_compiles` green.
 
 ### T-004 · Bridge v0 (spike): barY + band/linear `[x] 2026-08-07`
-- **Qué**: `TanStackChartBridge.jsx` con `MARK_REGISTRY={barY}`, `SCALE_REGISTRY={band, linear}`, `buildDefinition(spec)` con `useMemo`, render `<Chart definition height ariaLabel/>`.
+- **What**: `TanStackChartBridge.jsx` with `MARK_REGISTRY={barY}`, `SCALE_REGISTRY={band, linear}`, `buildDefinition(spec)` with `useMemo`, rendering `<Chart definition height ariaLabel/>`.
 - **REQ**: REQ-CH-002
-- **Depende de**: T-003
-- **Done**: demo (T-005) muestra el bar chart; sin errores en consola.
+- **Depends on**: T-003
+- **Done**: the demo (T-005) shows the bar chart; no console errors.
 
-### T-005 · Demo v0 + export (cierre del spike) `[x] 2026-08-07`
-- **Qué**: página demo con bar chart de frecuencia de letras 100% Python; validar pipeline completo.
-- **REQ**: REQ-CH-021 (parcial), REQ-CH-002
-- **Depende de**: T-004
-- **Done**: `cd tanstack_charts_demo && uv run reflex export --frontend-only` sin errores.
+### T-005 · Demo v0 + export (spike closure) `[x] 2026-08-07`
+- **What**: demo page with a letter-frequency bar chart, 100% Python; validate the full pipeline.
+- **REQ**: REQ-CH-021 (partial), REQ-CH-002
+- **Depends on**: T-004
+- **Done**: `cd tanstack_charts_demo && uv run reflex export --frontend-only` with no errors.
 
---- checkpoint: revisar T-001..T-005 antes de continuar ---
+--- checkpoint: review T-001..T-005 before continuing ---
 
-### T-006 · Núcleo de marcas: base + serialización `[x] 2026-08-07`
-- **Qué**: `marks.py` con `_mark(type, data, **channels)`: validación de campos (UNKNOWN_FIELD), snake→camelCase, datetime/date→ISO + `temporal_fields`, rechazo NaN/inf, omisión de None.
+### T-006 · Mark core: base + serialization `[x] 2026-08-07`
+- **What**: `marks.py` with `_mark(type, data, **channels)`: field validation (UNKNOWN_FIELD), snake→camelCase, datetime/date→ISO + `temporal_fields`, NaN/inf rejection, None omission.
 - **REQ**: REQ-CH-011, REQ-CH-012
-- **Depende de**: T-005
-- **Done**: `uv run pytest tests/test_marks.py -k "req_ch_011 or req_ch_012"` verde.
+- **Depends on**: T-005
+- **Done**: `uv run pytest tests/test_marks.py -k "req_ch_011 or req_ch_012"` green.
 
-### T-007 · 13 helpers restantes (Python) `[x] 2026-08-07`
-- **Qué**: `line_y/line_x/area_y/area_x/bar_x/dot/rule_x/rule_y/text/tick_x/tick_y/cell/pie` según catálogo API Spec §2.2 (canales requeridos/opcionales, catálogo `curve`).
+### T-007 · The 13 remaining helpers (Python) `[x] 2026-08-07`
+- **What**: `line_y/line_x/area_y/area_x/bar_x/dot/rule_x/rule_y/text/tick_x/tick_y/cell/pie` following the catalog in API Spec §2.2 (required/optional channels, `curve` catalog).
 - **REQ**: REQ-CH-003
-- **Depende de**: T-006
-- **Done**: snapshot test por helper (`tests/test_spec_contract.py`) verde.
+- **Depends on**: T-006
+- **Done**: snapshot test per helper (`tests/test_spec_contract.py`) green.
 
-### T-008 · Registro JS completo de marcas `[x] 2026-08-07`
-- **Qué**: ampliar `MARK_REGISTRY` a las 14 marcas (imports estáticos, DD-002); rehidratación `temporal_fields`; mapeo `curve`→`d3Curve`.
+### T-008 · Complete JS mark registry `[x] 2026-08-07`
+- **What**: extend `MARK_REGISTRY` to the 14 marks (static imports, DD-002); `temporal_fields` rehydration; `curve`→`d3Curve` mapping.
 - **REQ**: REQ-CH-003, REQ-CH-011
-- **Depende de**: T-007
-- **Done**: demo renderiza línea temporal (utc) y donut; consola limpia.
+- **Depends on**: T-007
+- **Done**: the demo renders a temporal line (utc) and a donut; clean console.
 
-### T-009 · Escalas, ejes y color `[x] 2026-08-07`
-- **Qué**: `scales.py` (catálogo 8 tipos, UNKNOWN_SCALE) + `axis.py` (label/grid/nice/ticks + FormatSpec) + `color` ordinal (REQ-CH-023) y sus registros JS (charts-scales + d3-scale + Intl). *(Secuencial tras T-008: comparten el bridge — Analyze A-03.)*
+### T-009 · Scales, axes and color `[x] 2026-08-07`
+- **What**: `scales.py` (8-type catalog, UNKNOWN_SCALE) + `axis.py` (label/grid/nice/ticks + FormatSpec) + ordinal `color` (REQ-CH-023) and their JS registries (charts-scales + d3-scale + Intl). *(Sequential after T-008: they share the bridge — Analyze A-03.)*
 - **REQ**: REQ-CH-004, REQ-CH-023
-- **Depende de**: T-006
-- **Done**: `uv run pytest tests/test_scales_axis.py` verde; eje con formato percent visible en demo.
+- **Depends on**: T-006
+- **Done**: `uv run pytest tests/test_scales_axis.py` green; an axis with percent format visible in the demo.
 
-### T-010 · Degradación y robustez del bridge `[x] 2026-08-07`
-- **Qué**: marca desconocida → warn+overlay (UNSUPPORTED_MARK); dataset vacío → omitir; ErrorBoundary (RENDER_ERROR); gate `spec.version`.
+### T-010 · Bridge degradation and robustness `[x] 2026-08-07`
+- **What**: unknown mark → warn+overlay (UNSUPPORTED_MARK); empty dataset → skip; ErrorBoundary (RENDER_ERROR); `spec.version` gate.
 - **REQ**: REQ-CH-013, REQ-CH-014, REQ-CH-015
-- **Depende de**: T-008
-- **Done**: página demo "edge cases" con spec inválido muestra placeholder; la página sigue viva.
+- **Depends on**: T-008
+- **Done**: an "edge cases" demo page with an invalid spec shows a placeholder; the page stays alive.
 
-### T-011 · Tests de contrato y unidad completos `[x] 2026-08-07`
-- **Qué**: completar suite: snapshots 14 marcas, validaciones, serialización, componente compila con todas las props.
-- **REQ**: Art. 6 (todos los MUST citados)
-- **Depende de**: T-007, T-009, T-010
-- **Done**: `uv run pytest` verde; grep confirma que todo REQ MUST aparece en ≥1 test.
+### T-011 · Complete contract and unit tests `[x] 2026-08-07`
+- **What**: complete the suite: 14 mark snapshots, validations, serialization, the component compiles with all props.
+- **REQ**: Art. 6 (all MUSTs cited)
+- **Depends on**: T-007, T-009, T-010
+- **Done**: `uv run pytest` green; grep confirms every MUST REQ appears in ≥1 test.
 
-### T-012 · Eventos hacia Python `[x] 2026-08-07`
-- **Qué**: `on_focus_change`/`on_select` como `rx.EventHandler` (spec de 1 arg dict|None); sanitizador de `PointPayload` en bridge (Date→ISO, undefined→null, solo planos); foco perdido → None.
+### T-012 · Events into Python `[x] 2026-08-07`
+- **What**: `on_focus_change`/`on_select` as `rx.EventHandler` (1-arg dict|None spec); `PointPayload` sanitizer in the bridge (Date→ISO, undefined→null, plain values only); focus lost → None.
 - **REQ**: REQ-CH-008, REQ-CH-009, REQ-CH-010
-- **Depende de**: T-008
-- **Done**: demo drill-down: click en punto actualiza `rx.text` con el datum; test de trigger declarado.
+- **Depends on**: T-008
+- **Done**: demo drill-down: clicking a point updates an `rx.text` with the datum; declared-trigger test.
 
-### T-013 · Tooltip y animación `[x] 2026-08-07` [P con T-012]
-- **Qué**: `tooltip=True` → import `@tanstack/charts/tooltip` en definition; `animate=True`.
+### T-013 · Tooltip and animation `[x] 2026-08-07` [P with T-012]
+- **What**: `tooltip=True` → import `@tanstack/charts/tooltip` into the definition; `animate=True`.
 - **REQ**: REQ-CH-006, REQ-CH-007
-- **Depende de**: T-009
-- **Done**: tooltip visible al hover en demo; transición al mutar datos.
+- **Depends on**: T-009
+- **Done**: tooltip visible on hover in the demo; transition when mutating the data.
 
-### T-014 · Sizing, aria y theming `[x] 2026-08-07` [P con T-012]
-- **Qué**: `aspect_ratio`+`initial_width` (excluyente con height explícito), warning dev sin `aria_label`, `theme` dict → estilo inline contenedor.
+### T-014 · Sizing, aria and theming `[x] 2026-08-07` [P with T-012]
+- **What**: `aspect_ratio`+`initial_width` (mutually exclusive with an explicit height), dev warning without `aria_label`, `theme` dict → inline container style.
 - **REQ**: REQ-CH-016, REQ-CH-017, REQ-CH-018
-- **Depende de**: T-009
-- **Done**: tests de validación verdes; demo con tema custom en dark mode.
+- **Depends on**: T-009
+- **Done**: validation tests green; demo with a custom theme in dark mode.
 
-### T-015 · Demo de reactividad `[x] 2026-08-07`
-- **Qué**: página con Var de datos + botón randomize (REQ-CH-005) y página de eventos (T-012).
+### T-015 · Reactivity demo `[x] 2026-08-07`
+- **What**: page with a data Var + randomize button (REQ-CH-005) and events page (T-012).
 - **REQ**: REQ-CH-005, REQ-CH-021
-- **Depende de**: T-012, T-013
-- **Done**: interacción manual verificada; `reflex export` verde.
+- **Depends on**: T-012, T-013
+- **Done**: manual interaction verified; `reflex export` green.
 
-### T-016 · Galería completa demo `[x] 2026-08-07`
-- **Qué**: 1 ejemplo por marca MUST (referencias del catálogo TanStack: bar-grouped, line-gaps, donut, scatter-bubble, range-band, heatmap con cell, waffle-like con tick…).
+### T-016 · Complete demo gallery `[x] 2026-08-07`
+- **What**: 1 example per MUST mark (TanStack catalog references: bar-grouped, line-gaps, donut, scatter-bubble, range-band, heatmap with cell, waffle-like with tick…).
 - **REQ**: REQ-CH-021
-- **Depende de**: T-015
-- **Done**: 14/14 marcas visibles en la galería; consola limpia.
+- **Depends on**: T-015
+- **Done**: 14/14 marks visible in the gallery; clean console.
 
-### T-017 · README y docs `[x] 2026-08-07` [P con T-016]
-- **Qué**: instalación (uv/pip), ejemplo <10 líneas, tabla de marcas, matriz de paridad, sección de eventos y theming.
+### T-017 · README and docs `[x] 2026-08-07` [P with T-016]
+- **What**: installation (uv/pip), <10-line example, mark table, parity matrix, events and theming sections.
 - **REQ**: REQ-CH-022
-- **Depende de**: T-015
-- **Done**: README renderiza bien en preview; ejemplo del README copiado a demo y funciona.
+- **Depends on**: T-015
+- **Done**: README renders well in preview; the README example copied into the demo and works.
 
-### T-018 · Build y validación de paquete `[~]` (build OK; instalación de wheel en app limpia pendiente en máquina del autor)
-- **Qué**: `uv build`; instalar wheel en app Reflex limpia y verificar asset JSX + npm deps.
+### T-018 · Package build and validation `[~]` (build OK; wheel installation in a clean app pending on the author's machine)
+- **What**: `uv build`; install the wheel in a clean Reflex app and verify the JSX asset + npm deps.
 - **REQ**: REQ-CH-019, REQ-CH-020
-- **Depende de**: T-016, T-017
-- **Done**: app limpia renderiza un chart usando solo el wheel instalado.
+- **Depends on**: T-016, T-017
+- **Done**: a clean app renders a chart using only the installed wheel.
 
-### T-019 · Publicación `[ ]`
-- **Qué**: `0.1.0a1` a TestPyPI (`uv publish --index testpypi`) → validar instalación → `0.1.0` a PyPI → `reflex component share`.
+### T-019 · Publication `[ ]`
+- **What**: `0.1.0a1` to TestPyPI (`uv publish --index testpypi`) → validate the installation → `0.1.0` to PyPI → `reflex component share`.
 - **REQ**: REQ-CH-019
-- **Depende de**: T-018
-- **Done**: `uv pip install reflex-tanstack-charts` desde PyPI funciona en entorno nuevo.
+- **Depends on**: T-018
+- **Done**: `uv pip install reflex-tanstack-charts` from PyPI works in a fresh environment.
 
-## Matriz de trazabilidad
+## Traceability matrix
 
-| REQ | Prioridad | Tareas | Tests que lo citan (planificados) |
+| REQ | Priority | Tasks | Tests citing it (planned) |
 |---|---|---|---|
 | REQ-CH-001 | MUST | T-003 | `test_req_ch_001_component_compiles` |
 | REQ-CH-002 | MUST | T-004, T-005 | `test_req_ch_002_spec_renders_mark` (snapshot) + demo export |
 | REQ-CH-003 | MUST | T-007, T-008 | `test_req_ch_003_snapshot_<mark>` ×14 |
 | REQ-CH-004 | MUST | T-009 | `test_req_ch_004_scale_catalog` |
-| REQ-CH-005 | MUST | T-015 | demo reactividad + `test_req_ch_005_spec_is_var_compatible` |
+| REQ-CH-005 | MUST | T-015 | reactivity demo + `test_req_ch_005_spec_is_var_compatible` |
 | REQ-CH-006 | MUST | T-013 | `test_req_ch_006_tooltip_flag` |
 | REQ-CH-007 | SHOULD | T-013 | `test_req_ch_007_animate_flag` |
 | REQ-CH-008 | MUST | T-012 | `test_req_ch_008_focus_trigger_declared` |
 | REQ-CH-009 | MUST | T-012 | `test_req_ch_009_select_trigger_declared` |
-| REQ-CH-010 | MUST | T-012 | verificación manual demo + sanitizador unit |
+| REQ-CH-010 | MUST | T-012 | manual demo verification + sanitizer unit test |
 | REQ-CH-011 | MUST | T-006, T-008 | `test_req_ch_011_datetime_iso_temporal_fields` |
 | REQ-CH-012 | MUST | T-006 | `test_req_ch_012_unknown_field_raises` |
-| REQ-CH-013 | MUST | T-010 | `test_req_ch_013_unsupported_mark_spec` + demo edge |
-| REQ-CH-014 | MUST | T-010 | `test_req_ch_014_empty_dataset_ok` + demo edge |
+| REQ-CH-013 | MUST | T-010 | `test_req_ch_013_unsupported_mark_spec` + demo edge case |
+| REQ-CH-014 | MUST | T-010 | `test_req_ch_014_empty_dataset_ok` + demo edge case |
 | REQ-CH-015 | SHOULD | T-010 | demo edge cases |
 | REQ-CH-016 | MUST | T-014 | `test_req_ch_016_sizing_validation` |
 | REQ-CH-017 | MUST | T-014 | `test_req_ch_017_aria_warning` |
 | REQ-CH-018 | SHOULD | T-014 | `test_req_ch_018_theme_vars` |
-| REQ-CH-019 | MUST | T-001, T-018, T-019 | build + install en app limpia |
+| REQ-CH-019 | MUST | T-001, T-018, T-019 | build + install in a clean app |
 | REQ-CH-020 | MUST | T-002, T-018 | `test_req_ch_020_pinned_lib_dependencies` |
-| REQ-CH-021 | MUST | T-005, T-015, T-016 | galería 14/14 + export verde |
-| REQ-CH-022 | SHOULD | T-017 | revisión manual README |
+| REQ-CH-021 | MUST | T-005, T-015, T-016 | gallery 14/14 + green export |
+| REQ-CH-022 | SHOULD | T-017 | manual README review |
 
-SHOULD sin tarea: ninguno. Diferidos (out of scope v0.1.0): marcas avanzadas e
-interacciones brush/zoom — ver PRD §5.2/§5.3.
+SHOULDs without a task: none. Deferred (out of scope for v0.1.0): advanced marks
+and brush/zoom interactions — see PRD §5.2/§5.3.
 
-## Registro de ejecución
+## Execution log
 
-| Fecha | Tareas | Resultado | Notas |
+| Date | Tasks | Result | Notes |
 |---|---|---|---|
-| 2026-08-07 | T-001..T-005 (spike) | ✅ | Versiones npm confirmadas: trío 0.7.2 + d3-scale 4.0.2 + d3-shape 3.2.0. `pie`/`tooltip` verificados con paquete instalado |
-| 2026-08-07 | T-006..T-011 (TDD) | ✅ | 56 tests verdes; ruff limpio. Tests escritos antes que la implementación |
-| 2026-08-07 | T-012..T-017 | ✅ | Demo: 1 página con 14/14 marcas + reactividad + eventos + theming + degradación |
-| 2026-08-07 | Export E2E | ✅ | `reflex export` produce `index.html` con 15 SVG prerenderizados (SSR). **Desviaciones descubiertas → spec actualizada (Tech Design §11)**: (1) TanStack 0.7.2 publicado NO infiere escalas → el bridge infiere por tipo de dato; (2) `pie()` en 0.7.2 es un transform: la marca real es `polar({marks:[radialArc(slices)]})` — la API Python no cambia |
-| 2026-08-07 | T-018 | 🔶 | `uv build` OK (wheel incluye el JSX). Instalación de wheel en app limpia + `reflex run` con bun: pendiente en máquina del autor (el sandbox no puede descargar bun; se validó con npm + timeout) |
-| 2026-08-07 | T-019 | ⏸ | Requiere token PyPI del autor |
-| 2026-08-07 | Delta demo-catálogo | ✅ | `changes/2026-08-07-demo-catalogo/`: demo reescrita replicando el catálogo oficial (33 réplicas + gramática completa; 51 SVG prerenderizados). REQ-CH-021 ampliado |
-| 2026-08-07 | Delta bridge-dom-host | ✅ | Bug "resolveDispatcher() is null" en `reflex run` (doble React en vite dev por servir el bridge desde /public). Bridge migrado a class + `mountChart` (DOM host sin hooks); `@tanstack/react-charts` retirado; REQ-CH-002/020 enmendados. Verificado con jsdom bajo dos copias de React |
+| 2026-08-07 | T-001..T-005 (spike) | ✅ | npm versions confirmed: the 0.7.2 trio + d3-scale 4.0.2 + d3-shape 3.2.0. `pie`/`tooltip` verified with the installed package |
+| 2026-08-07 | T-006..T-011 (TDD) | ✅ | 56 tests green; ruff clean. Tests written before the implementation |
+| 2026-08-07 | T-012..T-017 | ✅ | Demo: 1 page with 14/14 marks + reactivity + events + theming + degradation |
+| 2026-08-07 | E2E export | ✅ | `reflex export` produces an `index.html` with 15 prerendered SVGs (SSR). **Deviations discovered → spec updated (Tech Design §11)**: (1) the published TanStack 0.7.2 does NOT infer scales → the bridge infers them from the data type; (2) `pie()` in 0.7.2 is a transform: the real mark is `polar({marks:[radialArc(slices)]})` — the Python API does not change |
+| 2026-08-07 | T-018 | 🔶 | `uv build` OK (the wheel includes the JSX). Installing the wheel in a clean app + `reflex run` with bun: pending on the author's machine (the sandbox cannot download bun; validated with npm + timeout) |
+| 2026-08-07 | T-019 | ⏸ | Requires the author's PyPI token |
+| 2026-08-07 | Delta demo-catalog | ✅ | `changes/2026-08-07-demo-catalogo/`: demo rewritten to replicate the official catalog (33 replicas + complete grammar; 51 prerendered SVGs). REQ-CH-021 extended |
+| 2026-08-07 | Delta bridge-dom-host | ✅ | "resolveDispatcher() is null" bug on `reflex run` (double React in vite dev from serving the bridge out of /public). Bridge migrated to a class + `mountChart` (hook-free DOM host); `@tanstack/react-charts` removed; REQ-CH-002/020 amended. Verified with jsdom under two copies of React |
 
-Si al implementar se descubre que la spec estaba mal: **parar, actualizar la spec
-(o abrir un Delta en `changes/`), y solo entonces seguir.**
+If, while implementing, the spec turns out to be wrong: **stop, update the spec
+(or open a Delta in `changes/`), and only then continue.**

@@ -1,14 +1,14 @@
-"""Galería reflex-tanstack-charts basada en https://tanstack.com/charts/catalog.
+"""reflex-tanstack-charts gallery based on https://tanstack.com/charts/catalog.
 
-Replica, con la gramática del contrato v1 (14 marcas + escalas + color + tooltip
-+ eventos), todos los ejemplos del catálogo factibles sin marcas avanzadas.
-Cada tarjeta cita el id del ejemplo original. Los datos y transforms (bins,
-stacking, medias móviles, regresión, ranks…) viven en `_data.py` (Python puro),
-siguiendo el reparto de responsabilidades de TanStack.
+Reproduces, with the v1 contract grammar (14 marks + scales + color + tooltip
++ events), every catalog example that is feasible without advanced marks.
+Each card cites the id of the original example. The data and transforms (bins,
+stacking, moving averages, regression, ranks…) live in `_data.py` (pure Python),
+following TanStack's split of responsibilities.
 
-Los ejemplos del catálogo que requieren marcas fuera del contrato v1
-(treemap, sankey, geo, violin, box, radar, brush/zoom, motion…) se listan al
-final como fuera de alcance (PRD §5.2 → v0.2+).
+Catalog examples that require marks outside the v1 contract (treemap, sankey,
+geo, violin, box, radar, brush/zoom, motion…) are listed at the end as out of
+scope (PRD §5.2 → v0.2+).
 """
 
 import random
@@ -37,11 +37,11 @@ from reflex_tanstack_charts import (
 
 from . import _data as D
 
-# --- Estado (reactividad y eventos) -------------------------------------------
+# --- State (reactivity and events) --------------------------------------------
 
 
 class ChartsState(rx.State):
-    """Estado de la demo: datos reactivos y punto seleccionado."""
+    """Demo state: reactive data and selected point."""
 
     live_data: list[dict[str, Any]] = [
         {"cat": "A", "val": 30},
@@ -54,12 +54,12 @@ class ChartsState(rx.State):
 
     @rx.event
     def randomize(self):
-        """REQ-CH-005: mutar el Var re-renderiza con transición."""
+        """REQ-CH-005: mutating the Var re-renders with a transition."""
         self.live_data = [{"cat": c, "val": random.randint(10, 90)} for c in ["A", "B", "C", "D"]]
 
     @rx.event
     def on_focus(self, point: dict | None):
-        self.focused = "sin foco" if point is None else str(point.get("datum"))
+        self.focused = "no focus" if point is None else str(point.get("datum"))
 
     @rx.event
     def on_select(self, point: dict | None):
@@ -76,7 +76,7 @@ def card(title: str, catalog_id: str, category: str, description: str, *children
             rx.heading(title, size="4"),
             rx.hstack(
                 rx.badge(category, variant="soft"),
-                rx.badge(f"catálogo: {catalog_id}", variant="outline", color_scheme="gray"),
+                rx.badge(f"catalog: {catalog_id}", variant="outline", color_scheme="gray"),
                 rx.text(description, size="2", color_scheme="gray"),
                 align="center",
                 spacing="2",
@@ -95,11 +95,11 @@ def category_heading(name: str) -> rx.Component:
 
 
 def grid_section(items: list[rx.Component]) -> list[rx.Component]:
-    """Encabezado a ancho completo + sus tarjetas en rejilla de 3 columnas.
+    """Full-width heading + its cards in a 3-column grid.
 
-    Cada `*_section()` devuelve `[category_heading, card, card, …]`; solo las
-    tarjetas entran en la rejilla. Baja a 2 y 1 columna en pantallas estrechas
-    para que las gráficas no queden ilegibles.
+    Each `*_section()` returns `[category_heading, card, card, …]`; only the
+    cards go into the grid. It drops to 2 and 1 columns on narrow screens so the
+    charts do not become illegible.
     """
     heading, *cards = items
     return [
@@ -125,26 +125,26 @@ def industry_color_scale() -> dict:
 
 
 def binned_color_scale() -> dict:
-    """Rampa secuencial cuantizada del heatmap de bins (canal `color`)."""
+    """Quantized sequential ramp of the binned heatmap (`color` channel)."""
     return {"scale": scale("ordinal", domain=D.BINNED_2D_BUCKETS, range=D.BINNED_2D_COLORS)}
 
 
 def calendar_color_scale() -> dict:
-    """Rampa secuencial cuantizada del calendario de lluvia (canal `color`)."""
+    """Quantized sequential ramp of the rainfall calendar (`color` channel)."""
     return {"scale": scale("ordinal", domain=D.CALENDAR_BUCKETS, range=D.CALENDAR_COLORS)}
 
 
-# --- Secciones: BAR --------------------------------------------------------------
+# --- Sections: BAR ---------------------------------------------------------------
 
 
 def bars_section() -> list[rx.Component]:
     return [
-        category_heading("Barras"),
+        category_heading("Bars"),
         card(
-            "Barras verticales ordenadas",
+            "Sorted vertical bars",
             "bar-vertical-sorted",
             "bar",
-            "Frecuencia de letras ordenada descendente.",
+            "Letter frequency sorted descending.",
             tanstack_chart(
                 marks=[bar_y(D.LETTERS_SORTED, x="letter", y="frequency", fill="#4f46e5")],
                 x=axis(
@@ -154,31 +154,31 @@ def bars_section() -> list[rx.Component]:
                 ),
                 y=axis(grid=True, nice=True, ticks={"format": {"style": "percent"}}),
                 tooltip=True,
-                aria_label="Frecuencia de letras ordenada",
+                aria_label="Sorted letter frequency",
                 height=280,
             ),
         ),
         card(
-            "Ranking horizontal con etiquetas largas",
+            "Horizontal ranking with long labels",
             "bar-horizontal-ranking",
             "bar",
-            "Índice por ciudad, ordenado.",
+            "Index per city, sorted.",
             tanstack_chart(
                 marks=[bar_x(D.CITIES_SORTED, y="city", x="v2024", fill="#0ea5e9")],
                 y=axis(
                     scale=scale("band", padding=0.25, domain=[r["city"] for r in D.CITIES_SORTED])
                 ),
-                x=axis(grid=True, label="Índice 2024"),
+                x=axis(grid=True, label="2024 index"),
                 tooltip=True,
-                aria_label="Ranking de ciudades",
+                aria_label="City ranking",
                 height=300,
             ),
         ),
         card(
-            "Barras agrupadas",
+            "Grouped bars",
             "bar-grouped",
             "bar",
-            "Pingüinos por especie y sexo (categorías compuestas; ♂ azul, ♀ rosa).",
+            "Penguins by species and sex (composite categories; ♂ blue, ♀ pink).",
             tanstack_chart(
                 marks=[
                     bar_y(
@@ -197,17 +197,17 @@ def bars_section() -> list[rx.Component]:
                 x=axis(
                     scale=scale("band", padding=0.25, domain=[r["group"] for r in D.PENGUIN_GROUPS])
                 ),
-                y=axis(grid=True, label="Ejemplares"),
+                y=axis(grid=True, label="Individuals"),
                 tooltip=True,
-                aria_label="Pingüinos por especie y sexo",
+                aria_label="Penguins by species and sex",
                 height=280,
             ),
         ),
         card(
-            "Barras apiladas",
+            "Stacked bars",
             "bar-stacked",
             "bar",
-            "Revenue trimestral por producto (apilado por acumulados, técnica painter).",
+            "Quarterly revenue per product (stacked by cumulative totals, painter technique).",
             tanstack_chart(
                 marks=[
                     bar_y(D.STACKED_BARS[p], x="quarter", y="cum", fill=c)
@@ -216,52 +216,52 @@ def bars_section() -> list[rx.Component]:
                 x=axis(scale=scale("band", padding=0.3)),
                 y=axis(grid=True, label="Revenue ($k)"),
                 tooltip=True,
-                aria_label="Revenue apilado por producto",
+                aria_label="Stacked revenue per product",
                 height=280,
             ),
         ),
         card(
-            "Barras de agregación (media)",
+            "Aggregation bars (mean)",
             "59-grouped-reducer-bars",
             "bar",
-            "Masa media por especie, calculada en Python (reduce en la capa de datos).",
+            "Mean mass per species, computed in Python (reduce in the data layer).",
             tanstack_chart(
                 marks=[bar_y(D.PENGUIN_MEANS, x="species", y="mean_mass", fill="#10b981")],
                 x=axis(scale=scale("band", padding=0.3)),
-                y=axis(grid=True, label="Masa media (g)"),
+                y=axis(grid=True, label="Mean mass (g)"),
                 tooltip=True,
-                aria_label="Masa media por especie",
+                aria_label="Mean mass per species",
                 height=260,
             ),
         ),
     ]
 
 
-# --- Secciones: TREND ------------------------------------------------------------
+# --- Sections: TREND -------------------------------------------------------------
 
 
 def trend_section() -> list[rx.Component]:
     return [
-        category_heading("Tendencia"),
+        category_heading("Trend"),
         card(
-            "Línea con huecos estacionales",
+            "Line with seasonal gaps",
             "01-line-gaps",
             "trend",
-            "Valores None cortan la línea (gaps).",
+            "None values break the line (gaps).",
             tanstack_chart(
                 marks=[line_y(D.AAPL_GAPS, x="day", y="close", stroke="#4f46e5", stroke_width=2)],
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True, label="Close (USD)"),
                 tooltip=True,
-                aria_label="Serie con huecos",
+                aria_label="Series with gaps",
                 height=280,
             ),
         ),
         card(
-            "Multilínea con etiquetas al final",
+            "Multi-line with end labels",
             "02-multi-line-end-labels",
             "trend",
-            "Cuatro industrias; color por serie (z) y etiqueta en el último punto.",
+            "Four industries; color per series (z) and a label on the last point.",
             tanstack_chart(
                 marks=[
                     line_y(D.INDUSTRIES, x="month", y="rate", z="industry", stroke_width=2),
@@ -276,18 +276,18 @@ def trend_section() -> list[rx.Component]:
                     ),
                 ],
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
-                y=axis(grid=True, label="Desempleo (%)"),
+                y=axis(grid=True, label="Unemployment (%)"),
                 color=industry_color_scale(),
                 tooltip=True,
-                aria_label="Desempleo por industria",
+                aria_label="Unemployment by industry",
                 height=320,
             ),
         ),
         card(
-            "Medias móviles",
+            "Moving averages",
             "19-moving-average-line",
             "trend",
-            "Serie diaria con MA7 y MA30 precalculadas.",
+            "Daily series with precomputed MA7 and MA30.",
             tanstack_chart(
                 marks=[
                     line_y(D.AAPL, x="day", y="close", stroke="#cbd5e1", stroke_width=1),
@@ -297,15 +297,15 @@ def trend_section() -> list[rx.Component]:
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True),
                 tooltip=True,
-                aria_label="Medias móviles",
+                aria_label="Moving averages",
                 height=280,
             ),
         ),
         card(
-            "Banda de Bollinger",
+            "Bollinger band",
             "22-bollinger-band",
             "trend",
-            "Media ± 2σ en ventana de 20 días.",
+            "Mean ± 2σ over a 20-day window.",
             tanstack_chart(
                 marks=[
                     area_y(
@@ -329,15 +329,15 @@ def trend_section() -> list[rx.Component]:
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True),
                 tooltip=True,
-                aria_label="Banda de Bollinger",
+                aria_label="Bollinger band",
                 height=300,
             ),
         ),
         card(
-            "Extremos anotados",
+            "Annotated extrema",
             "58-select-extrema",
             "trend",
-            "Mínimo y máximo seleccionados en Python y anotados.",
+            "Minimum and maximum selected in Python and annotated.",
             tanstack_chart(
                 marks=[
                     line_y(D.AAPL, x="day", y="close", stroke="#64748b", stroke_width=1.5),
@@ -354,15 +354,15 @@ def trend_section() -> list[rx.Component]:
                 ],
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True),
-                aria_label="Extremos anotados",
+                aria_label="Annotated extrema",
                 height=280,
             ),
         ),
         card(
-            "Multilínea indexada (base 100)",
+            "Indexed multi-line (base 100)",
             "55-indexed-multi-line",
             "trend",
-            "Cada industria indexada a su primer mes.",
+            "Each industry indexed to its first month.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -371,27 +371,27 @@ def trend_section() -> list[rx.Component]:
                     rule_y([100], stroke_dasharray="5 5", stroke_opacity=0.6),
                 ],
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
-                y=axis(grid=True, label="Índice (base 100)"),
+                y=axis(grid=True, label="Index (base 100)"),
                 color=industry_color_scale(),
                 tooltip=True,
-                aria_label="Series indexadas",
+                aria_label="Indexed series",
                 height=300,
             ),
         ),
     ]
 
 
-# --- Secciones: CHANGE / COMPARISON ----------------------------------------------
+# --- Sections: CHANGE / COMPARISON -----------------------------------------------
 
 
 def change_section() -> list[rx.Component]:
     return [
-        category_heading("Cambio y comparación"),
+        category_heading("Change and comparison"),
         card(
-            "Slopegraph de dos períodos",
+            "Two-period slopegraph",
             "30-slopegraph",
             "change",
-            "2019 → 2024 por ciudad; una línea por serie (z).",
+            "2019 → 2024 per city; one line per series (z).",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -415,15 +415,15 @@ def change_section() -> list[rx.Component]:
                 ],
                 x=axis(scale=scale("point", padding=0.35)),
                 y=axis(grid=True),
-                aria_label="Slopegraph de ciudades",
+                aria_label="City slopegraph",
                 height=360,
             ),
         ),
         card(
-            "Close vs media móvil (diferencia)",
+            "Close vs moving average (difference)",
             "33-difference-chart",
             "change",
-            "Aproximación v1: banda neutra entre las curvas (differenceY con signo llega en v0.2).",
+            "v1 approximation: neutral band between the curves (signed differenceY lands in v0.2).",
             tanstack_chart(
                 marks=[
                     area_y(
@@ -447,7 +447,7 @@ def change_section() -> list[rx.Component]:
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True),
                 tooltip=True,
-                aria_label="Diferencia close vs MA30",
+                aria_label="Close vs MA30 difference",
                 height=280,
             ),
         ),
@@ -455,7 +455,7 @@ def change_section() -> list[rx.Component]:
             "Dumbbell",
             "17-dumbbell",
             "comparison",
-            "Segmento 2019–2024 por ciudad (línea z) con extremos coloreados.",
+            "2019–2024 segment per city (z line) with colored endpoints.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -482,17 +482,17 @@ def change_section() -> list[rx.Component]:
                     ),
                 ],
                 y=axis(scale=scale("point", padding=0.5)),
-                x=axis(grid=True, label="Índice (gris 2019 → azul 2024)"),
+                x=axis(grid=True, label="Index (gray 2019 → blue 2024)"),
                 tooltip=True,
-                aria_label="Dumbbell por ciudad",
+                aria_label="Dumbbell per city",
                 height=320,
             ),
         ),
         card(
-            "Lollipop ordenado",
+            "Sorted lollipop",
             "16-lollipop",
             "comparison",
-            "Tallo (línea z de 0 al valor) + punto.",
+            "Stem (z line from 0 to the value) + dot.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -514,15 +514,15 @@ def change_section() -> list[rx.Component]:
                 ),
                 y=axis(grid=True),
                 tooltip=True,
-                aria_label="Lollipop de ciudades",
+                aria_label="City lollipop",
                 height=300,
             ),
         ),
         card(
-            "Pirámide de población",
+            "Population pyramid",
             "71-recharts-population-pyramid",
             "comparison",
-            "Machos a la izquierda (negativo), hembras a la derecha.",
+            "Males on the left (negative), females on the right.",
             tanstack_chart(
                 marks=[
                     bar_x(D.PENGUIN_PYRAMID_M, y="species", x="count", fill="#38bdf8"),
@@ -530,54 +530,54 @@ def change_section() -> list[rx.Component]:
                     rule_x([0], stroke_opacity=0.6),
                 ],
                 y=axis(scale=scale("band", padding=0.3)),
-                x=axis(grid=True, label="♂ ← ejemplares → ♀"),
+                x=axis(grid=True, label="♂ ← individuals → ♀"),
                 tooltip=True,
-                aria_label="Pirámide por especie y sexo",
+                aria_label="Pyramid by species and sex",
                 height=240,
             ),
         ),
     ]
 
 
-# --- Secciones: DISTRIBUTION -----------------------------------------------------
+# --- Sections: DISTRIBUTION ------------------------------------------------------
 
 
 def distribution_section() -> list[rx.Component]:
     return [
-        category_heading("Distribución"),
+        category_heading("Distribution"),
         card(
-            "Histograma",
+            "Histogram",
             "histogram",
             "distribution",
-            "Retornos diarios (%) binned en Python.",
+            "Daily returns (%) binned in Python.",
             tanstack_chart(
                 marks=[bar_y(D.RETURNS_HIST, x="bin", y="count", fill="#0ea5e9")],
-                x=axis(scale=scale("band", padding=0.08), label="Retorno (%)"),
-                y=axis(grid=True, label="Frecuencia"),
+                x=axis(scale=scale("band", padding=0.08), label="Return (%)"),
+                y=axis(grid=True, label="Frequency"),
                 tooltip=True,
-                aria_label="Histograma de retornos",
+                aria_label="Histogram of returns",
                 height=260,
             ),
         ),
         card(
-            "Histograma acumulado",
+            "Cumulative histogram",
             "18-cumulative-histogram",
             "distribution",
-            "Acumulado de los mismos bins.",
+            "Cumulative total of the same bins.",
             tanstack_chart(
                 marks=[bar_y(D.RETURNS_HIST, x="bin", y="cum", fill="#6366f1")],
                 x=axis(scale=scale("band", padding=0.08)),
-                y=axis(grid=True, label="Acumulado"),
+                y=axis(grid=True, label="Cumulative"),
                 tooltip=True,
-                aria_label="Histograma acumulado",
+                aria_label="Cumulative histogram",
                 height=260,
             ),
         ),
         card(
-            "Distribución acumulada empírica (ECDF)",
+            "Empirical cumulative distribution (ECDF)",
             "50-empirical-cdf",
             "distribution",
-            "Curva step-after sobre los retornos ordenados.",
+            "Step-after curve over the sorted returns.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -590,41 +590,41 @@ def distribution_section() -> list[rx.Component]:
                     ),
                     rule_y([0.5], stroke_dasharray="4 4", stroke_opacity=0.5),
                 ],
-                x=axis(grid=True, label="Retorno (%)"),
+                x=axis(grid=True, label="Return (%)"),
                 y=axis(grid=True, ticks={"format": {"style": "percent"}}),
-                aria_label="ECDF de retornos",
+                aria_label="ECDF of returns",
                 height=260,
             ),
         ),
         card(
-            "Heatmap binned cuantitativo",
+            "Quantitative binned heatmap",
             "24-quantitative-binned-heatmap",
             "distribution",
-            "Bins 2D de una nube gaussiana; intensidad = conteo cuantizado.",
+            "2D bins of a Gaussian cloud; intensity = quantized count.",
             tanstack_chart(
                 marks=[cell(D.BINNED_2D, x="xbin", y="ybin", color="bucket", inset=1)],
                 x=axis(scale=scale("band", domain=[f"{b}…{b + 1}" for b in range(-2, 3)])),
                 y=axis(scale=scale("band", domain=[f"{b}…{b + 1}" for b in range(2, -3, -1)])),
                 color=binned_color_scale(),
                 tooltip=True,
-                aria_label="Heatmap binned",
+                aria_label="Binned heatmap",
                 height=280,
             ),
         ),
     ]
 
 
-# --- Secciones: RELATIONSHIP -----------------------------------------------------
+# --- Sections: RELATIONSHIP ------------------------------------------------------
 
 
 def relationship_section() -> list[rx.Component]:
     return [
-        category_heading("Relación"),
+        category_heading("Relationship"),
         card(
-            "Scatter de burbujas",
+            "Bubble scatter",
             "scatter-bubble",
             "relationship",
-            "Radio como canal (r = campo).",
+            "Radius as a channel (r = field).",
             tanstack_chart(
                 marks=[
                     dot(
@@ -662,15 +662,15 @@ def relationship_section() -> list[rx.Component]:
                     )
                 },
                 tooltip=True,
-                aria_label="Burbujas de cuentas",
+                aria_label="Account bubbles",
                 height=300,
             ),
         ),
         card(
-            "Scatter con regresión lineal",
+            "Scatter with linear regression",
             "31-linear-regression",
             "relationship",
-            "OLS calculada en Python; recta como línea de dos puntos.",
+            "OLS computed in Python; the fit as a two-point line.",
             tanstack_chart(
                 marks=[
                     dot(D.PENGUINS, x="mass", y="flipper", r=2.5, fill="#0ea5e9", opacity=0.6),
@@ -682,18 +682,18 @@ def relationship_section() -> list[rx.Component]:
                         stroke_width=2,
                     ),
                 ],
-                x=axis(grid=True, label="Masa (g)"),
-                y=axis(grid=True, label="Aleta (mm)"),
+                x=axis(grid=True, label="Mass (g)"),
+                y=axis(grid=True, label="Flipper (mm)"),
                 tooltip=True,
-                aria_label="Regresión masa-aleta",
+                aria_label="Mass-flipper regression",
                 height=300,
             ),
         ),
         card(
-            "Scatter conectado dirigido",
+            "Directed connected scatter",
             "56-connected-scatter",
             "relationship",
-            "Trayectoria anual desempleo vs inflación con etiquetas.",
+            "Yearly unemployment vs inflation trajectory with labels.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -714,67 +714,67 @@ def relationship_section() -> list[rx.Component]:
                         font_size=10,
                     ),
                 ],
-                x=axis(grid=True, label="Desempleo (%)"),
-                y=axis(grid=True, label="Inflación (%)"),
-                aria_label="Scatter conectado",
+                x=axis(grid=True, label="Unemployment (%)"),
+                y=axis(grid=True, label="Inflation (%)"),
+                aria_label="Connected scatter",
                 height=320,
             ),
         ),
         card(
-            "Autocorrelación lag-1",
+            "Lag-1 autocorrelation",
             "60-lag-autocorrelation",
             "relationship",
-            "Retorno t-1 vs retorno t con reglas en 0.",
+            "Return t-1 vs return t with rules at 0.",
             tanstack_chart(
                 marks=[
                     dot(D.AAPL_LAG, x="prev", y="curr", r=2.5, fill="#8b5cf6", opacity=0.6),
                     rule_x([0], stroke_opacity=0.4),
                     rule_y([0], stroke_opacity=0.4),
                 ],
-                x=axis(grid=True, label="Retorno t-1 (%)"),
-                y=axis(grid=True, label="Retorno t (%)"),
-                aria_label="Autocorrelación lag-1",
+                x=axis(grid=True, label="Return t-1 (%)"),
+                y=axis(grid=True, label="Return t (%)"),
+                aria_label="Lag-1 autocorrelation",
                 height=300,
             ),
         ),
         card(
-            "Scatter en escala log-log",
+            "Log-log scale scatter",
             "53-log-scale-scatter",
             "relationship",
-            "Tamaño de paquete vs descargas, ambas en log.",
+            "Package size vs downloads, both on a log scale.",
             tanstack_chart(
                 marks=[
                     dot(D.LOG_SCATTER, x="size_kb", y="downloads", r=3, fill="#f59e0b", opacity=0.7)
                 ],
-                x=axis(scale=scale("log"), grid=True, label="Tamaño (KiB, log)"),
+                x=axis(scale=scale("log"), grid=True, label="Size (KiB, log)"),
                 y=axis(
                     scale=scale("log"),
                     grid=True,
-                    label="Descargas (log)",
+                    label="Downloads (log)",
                     ticks={"format": {"style": "compact"}},
                 ),
                 tooltip=True,
-                aria_label="Scatter log-log",
+                aria_label="Log-log scatter",
                 height=300,
             ),
         ),
         card(
-            "Scatter de muchos puntos",
+            "Many-point scatter",
             "73-many-point-scatter",
             "performance",
-            "400 puntos con opacidad baja.",
+            "400 points with low opacity.",
             tanstack_chart(
                 marks=[dot(D.MANY_POINTS, x="x", y="y", r=2, fill="#334155", opacity=0.35)],
                 x=axis(grid=True),
                 y=axis(grid=True),
-                aria_label="Nube de puntos",
+                aria_label="Point cloud",
                 height=300,
             ),
         ),
     ]
 
 
-# --- Secciones: COMPOSITION / PART-TO-WHOLE --------------------------------------
+# --- Sections: COMPOSITION / PART-TO-WHOLE ---------------------------------------
 
 
 def composition_section() -> list[rx.Component]:
@@ -813,30 +813,30 @@ def composition_section() -> list[rx.Component]:
         for n in D.INDUSTRY_NAMES
     ]
     return [
-        category_heading("Composición y parte-de-un-todo"),
+        category_heading("Composition and part-to-whole"),
         card(
-            "Área apilada temporal",
+            "Stacked time area",
             "04-stacked-time-area",
             "composition",
-            "Acumulados por industria (painter, precalculado en Python).",
+            "Cumulative totals per industry (painter, precomputed in Python).",
             tanstack_chart(
                 marks=stacked_marks,
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
-                y=axis(grid=True, label="Desempleo acumulado (pp)"),
-                aria_label="Área apilada",
+                y=axis(grid=True, label="Cumulative unemployment (pp)"),
+                aria_label="Stacked area",
                 height=300,
             ),
         ),
         card(
-            "Área apilada normalizada",
+            "Normalized stacked area",
             "20-normalized-stacked-area",
             "composition",
-            "Share de cada industria sobre el total.",
+            "Share of each industry over the total.",
             tanstack_chart(
                 marks=normalized_marks,
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
                 y=axis(grid=True, ticks={"format": {"style": "percent"}}),
-                aria_label="Área normalizada",
+                aria_label="Normalized area",
                 height=280,
             ),
         ),
@@ -844,7 +844,7 @@ def composition_section() -> list[rx.Component]:
             "Streamgraph",
             "21-streamgraph",
             "composition",
-            "Bandas y1/y2 con línea base centrada, calculadas en Python.",
+            "y1/y2 bands with a centered baseline, computed in Python.",
             tanstack_chart(
                 marks=stream_marks,
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
@@ -854,10 +854,10 @@ def composition_section() -> list[rx.Component]:
             ),
         ),
         card(
-            "Waffle de unidades",
+            "Unit waffle",
             "41-waffle-unit-chart",
             "part-to-whole",
-            "Cuadrícula 10×10 de celdas asignadas por frecuencia (cell).",
+            "10×10 grid of cells allocated by frequency (cell).",
             tanstack_chart(
                 marks=[cell(D.WAFFLE, x="col", y="row", color="key", inset=2)],
                 x=axis(scale=scale("band", domain=[str(i) for i in range(10)])),
@@ -870,7 +870,7 @@ def composition_section() -> list[rx.Component]:
                     )
                 },
                 tooltip=True,
-                aria_label="Waffle de letras",
+                aria_label="Letter waffle",
                 height=340,
             ),
         ),
@@ -878,11 +878,11 @@ def composition_section() -> list[rx.Component]:
             "Pie",
             "76-pie",
             "polar",
-            "Frecuencia de letras.",
+            "Letter frequency.",
             tanstack_chart(
                 marks=[pie(D.LETTERS_SORTED[:6], value="frequency", label="letter")],
                 tooltip=True,
-                aria_label="Pie de letras",
+                aria_label="Letter pie",
                 height=280,
             ),
         ),
@@ -896,15 +896,15 @@ def composition_section() -> list[rx.Component]:
                     pie(D.LETTERS_SORTED[:6], value="frequency", label="letter", inner_radius=70)
                 ],
                 tooltip=True,
-                aria_label="Donut de letras",
+                aria_label="Letter donut",
                 height=280,
             ),
         ),
         card(
-            "Donut con total centrado",
+            "Donut with centered total",
             "94-center-donut",
             "polar",
-            "Overlay de Reflex sobre el hueco del donut.",
+            "Reflex overlay on top of the donut hole.",
             rx.box(
                 tanstack_chart(
                     marks=[
@@ -913,13 +913,13 @@ def composition_section() -> list[rx.Component]:
                         )
                     ],
                     tooltip=True,
-                    aria_label="Donut con total",
+                    aria_label="Donut with total",
                     height=300,
                 ),
                 rx.center(
                     rx.vstack(
                         rx.text(f"{D.DONUT_TOTAL:.0%}", size="7", weight="bold"),
-                        rx.text("del corpus", size="1", color_scheme="gray"),
+                        rx.text("of the corpus", size="1", color_scheme="gray"),
                         spacing="0",
                         align="center",
                     ),
@@ -932,7 +932,7 @@ def composition_section() -> list[rx.Component]:
             ),
         ),
         card(
-            "Donut redondeado",
+            "Rounded donut",
             "95-rounded-donut",
             "polar",
             "corner_radius + pad_angle.",
@@ -948,15 +948,15 @@ def composition_section() -> list[rx.Component]:
                     )
                 ],
                 tooltip=True,
-                aria_label="Donut redondeado",
+                aria_label="Rounded donut",
                 height=280,
             ),
         ),
         card(
-            "Donut anidado",
+            "Nested donut",
             "96-nested-donut",
             "polar",
-            "Dos marcas pie con radios concéntricos (paquetes / módulos).",
+            "Two pie marks with concentric radii (packages / modules).",
             tanstack_chart(
                 marks=[
                     pie(D.NESTED_INNER, value="size", label="pkg", outer_radius=62),
@@ -965,24 +965,24 @@ def composition_section() -> list[rx.Component]:
                     ),
                 ],
                 tooltip=True,
-                aria_label="Donut anidado",
+                aria_label="Nested donut",
                 height=300,
             ),
         ),
     ]
 
 
-# --- Secciones: RANGE / UNCERTAINTY / TIME ---------------------------------------
+# --- Sections: RANGE / UNCERTAINTY / TIME ----------------------------------------
 
 
 def range_time_section() -> list[rx.Component]:
     return [
-        category_heading("Rangos, incertidumbre y tiempo"),
+        category_heading("Ranges, uncertainty and time"),
         card(
-            "Banda de rango de temperatura",
+            "Temperature range band",
             "03-temperature-range-band",
             "range",
-            "Mín–máx mensual como banda + líneas.",
+            "Monthly min–max as a band + lines.",
             tanstack_chart(
                 marks=[
                     area_y(
@@ -1014,15 +1014,15 @@ def range_time_section() -> list[rx.Component]:
                 x=axis(scale=scale("point", padding=0.2, domain=D.SF_MONTHS)),
                 y=axis(grid=True, label="°C"),
                 tooltip=True,
-                aria_label="Rango de temperaturas",
+                aria_label="Temperature range",
                 height=280,
             ),
         ),
         card(
-            "Cinta de percentiles",
+            "Quantile ribbon",
             "61-quantile-ribbon",
             "uncertainty",
-            "Bandas p10–p90 y p25–p75 + mediana.",
+            "p10–p90 and p25–p75 bands + median.",
             tanstack_chart(
                 marks=[
                     area_y(
@@ -1053,16 +1053,16 @@ def range_time_section() -> list[rx.Component]:
                     ),
                 ],
                 x=axis(scale=scale("utc"), ticks={"format": {"month": "short"}}),
-                y=axis(grid=True, label="Tasa (%)"),
-                aria_label="Cinta de percentiles",
+                y=axis(grid=True, label="Rate (%)"),
+                aria_label="Quantile ribbon",
                 height=300,
             ),
         ),
         card(
-            "Puntos con barras de error",
+            "Dots with error bars",
             "14-error-bars",
             "uncertainty",
-            "Segmento vertical por ensayo (línea z) + media.",
+            "Vertical segment per trial (z line) + mean.",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -1076,32 +1076,32 @@ def range_time_section() -> list[rx.Component]:
                     dot(D.ERRORS, x="trial", y="mean", r=5, fill="#4f46e5"),
                 ],
                 x=axis(scale=scale("point", padding=0.4)),
-                y=axis(grid=True, label="Medición"),
+                y=axis(grid=True, label="Measurement"),
                 tooltip=True,
-                aria_label="Barras de error",
+                aria_label="Error bars",
                 height=280,
             ),
         ),
         card(
-            "Calendario heatmap",
+            "Calendar heatmap",
             "25-calendar-heatmap · 118-token-usage-calendar",
             "time",
-            "26 semanas × 7 días; intensidad = mm de lluvia cuantizados.",
+            "26 weeks × 7 days; intensity = quantized mm of rainfall.",
             tanstack_chart(
                 marks=[cell(D.CALENDAR, x="week", y="day", color="bucket", inset=1)],
-                x=axis(scale=scale("band", domain=[f"S{w + 1:02d}" for w in range(26)])),
-                y=axis(scale=scale("band", domain=D.DAYS_ES)),
+                x=axis(scale=scale("band", domain=[f"W{w + 1:02d}" for w in range(26)])),
+                y=axis(scale=scale("band", domain=D.DAYS)),
                 color=calendar_color_scale(),
                 tooltip=True,
-                aria_label="Calendario de lluvia",
+                aria_label="Rainfall calendar",
                 height=240,
             ),
         ),
         card(
-            "Heatmap ordinal etiquetado",
+            "Labeled ordinal heatmap",
             "heatmap-labeled",
             "matrix",
-            "cell + text con el valor dentro de cada celda.",
+            "cell + text with the value inside each cell.",
             tanstack_chart(
                 marks=[
                     cell(D.BINNED_2D, x="xbin", y="ybin", color="bucket", inset=1),
@@ -1112,24 +1112,24 @@ def range_time_section() -> list[rx.Component]:
                 x=axis(scale=scale("band", domain=[f"{b}…{b + 1}" for b in range(-2, 3)])),
                 y=axis(scale=scale("band", domain=[f"{b}…{b + 1}" for b in range(2, -3, -1)])),
                 color=binned_color_scale(),
-                aria_label="Heatmap etiquetado",
+                aria_label="Labeled heatmap",
                 height=280,
             ),
         ),
     ]
 
 
-# --- Secciones: RANKING / MULTIVARIATE / SURVEY ----------------------------------
+# --- Sections: RANKING / MULTIVARIATE / SURVEY -----------------------------------
 
 
 def ranking_section() -> list[rx.Component]:
     return [
-        category_heading("Ranking, multivariable y encuestas"),
+        category_heading("Ranking, multivariate and surveys"),
         card(
-            "Bump chart de ranking",
+            "Ranking bump chart",
             "54-bump-ranking",
             "ranking",
-            "Posición mensual por industria (eje y invertido: 1 arriba).",
+            "Monthly position per industry (inverted y axis: 1 on top).",
             tanstack_chart(
                 marks=[
                     line_y(
@@ -1146,19 +1146,19 @@ def ranking_section() -> list[rx.Component]:
                 y=axis(scale=scale("linear", domain=[4.5, 0.5]), ticks={"count": 4}, label="Rank"),
                 color=industry_color_scale(),
                 tooltip=True,
-                aria_label="Bump de industrias",
+                aria_label="Industry bump chart",
                 height=280,
             ),
         ),
         card(
-            "Coordenadas paralelas",
+            "Parallel coordinates",
             "27-parallel-coordinates",
             "multivariate",
-            "14 autos × 4 dimensiones normalizadas; una polilínea por auto (z).",
+            "14 cars × 4 normalized dimensions; one polyline per car (z).",
             tanstack_chart(
                 marks=[
                     line_y(
-                        [r for r in D.PARALLEL if r["kind"] == "deportivo"],
+                        [r for r in D.PARALLEL if r["kind"] == "sports"],
                         x="dim",
                         y="value",
                         z="car",
@@ -1167,7 +1167,7 @@ def ranking_section() -> list[rx.Component]:
                         stroke_opacity=0.55,
                     ),
                     line_y(
-                        [r for r in D.PARALLEL if r["kind"] == "familiar"],
+                        [r for r in D.PARALLEL if r["kind"] == "family"],
                         x="dim",
                         y="value",
                         z="car",
@@ -1178,15 +1178,15 @@ def ranking_section() -> list[rx.Component]:
                 ],
                 x=axis(scale=scale("point", padding=0.15)),
                 y=axis(grid=True, ticks={"format": {"style": "percent"}}),
-                aria_label="Coordenadas paralelas",
+                aria_label="Parallel coordinates",
                 height=300,
             ),
         ),
         card(
-            "Likert divergente",
+            "Diverging Likert",
             "26-diverging-likert",
             "survey",
-            "Acumulados painter a cada lado del cero.",
+            "Painter cumulative totals on each side of zero.",
             tanstack_chart(
                 marks=[
                     bar_x(D.LIKERT_LEFT_OUTER, y="statement", x="v", fill="#dc2626"),
@@ -1197,26 +1197,26 @@ def ranking_section() -> list[rx.Component]:
                     rule_x([0], stroke_opacity=0.7),
                 ],
                 y=axis(scale=scale("band", padding=0.35)),
-                x=axis(grid=True, label="← desacuerdo · respuestas · acuerdo →"),
+                x=axis(grid=True, label="← disagree · responses · agree →"),
                 tooltip=True,
-                aria_label="Likert divergente",
+                aria_label="Diverging Likert",
                 height=300,
             ),
         ),
     ]
 
 
-# --- Secciones: INTERACTION (subconjunto v1) -------------------------------------
+# --- Sections: INTERACTION (v1 subset) -------------------------------------------
 
 
 def interaction_section() -> list[rx.Component]:
     return [
-        category_heading("Interacción (subconjunto v1)"),
+        category_heading("Interaction (v1 subset)"),
         card(
-            "Tooltip por puntero",
+            "Pointer tooltip",
             "34-pointer-tooltip · 35-grouped-tooltip",
             "interaction",
-            "Tooltip nativo sobre composición por capas.",
+            "Native tooltip over a layered composition.",
             tanstack_chart(
                 marks=[
                     area_y(
@@ -1242,15 +1242,15 @@ def interaction_section() -> list[rx.Component]:
                 x=axis(scale=scale("point", padding=0.2, domain=D.SF_MONTHS)),
                 y=axis(grid=True, label="°C"),
                 tooltip=True,
-                aria_label="Tooltip por puntero",
+                aria_label="Pointer tooltip",
                 height=280,
             ),
         ),
         card(
-            "Selección enlazada chart → estado",
+            "Linked selection chart → state",
             "82-chart-table-selection",
             "interaction",
-            "on_focus_change / on_select llegan sanitizados a Python.",
+            "on_focus_change / on_select arrive sanitized in Python.",
             tanstack_chart(
                 marks=[
                     dot(
@@ -1262,43 +1262,43 @@ def interaction_section() -> list[rx.Component]:
                         id="events-demo",
                     )
                 ],
-                x=axis(grid=True, label="Masa (g)"),
-                y=axis(grid=True, label="Aleta (mm)"),
+                x=axis(grid=True, label="Mass (g)"),
+                y=axis(grid=True, label="Flipper (mm)"),
                 tooltip=True,
-                aria_label="Scatter interactivo",
+                aria_label="Interactive scatter",
                 height=280,
                 on_focus_change=ChartsState.on_focus,
                 on_select=ChartsState.on_select,
             ),
             rx.hstack(
-                rx.text("Foco: ", weight="bold"),
+                rx.text("Focus: ", weight="bold"),
                 rx.code(ChartsState.focused),
-                rx.text("Selección: ", weight="bold"),
+                rx.text("Selection: ", weight="bold"),
                 rx.code(ChartsState.selected),
                 spacing="2",
                 wrap="wrap",
             ),
         ),
         card(
-            "Datos vivos con transición",
-            "86-streaming-window-preservation (aprox.)",
+            "Live data with transition",
+            "86-streaming-window-preservation (approx.)",
             "interaction",
-            "Var de estado + animate: mutar re-renderiza con transición.",
+            "State Var + animate: mutating re-renders with a transition.",
             tanstack_chart(
                 marks=[bar_y(ChartsState.live_data, x="cat", y="val", fill="#10b981")],
                 x=axis(scale=scale("band", padding=0.2)),
                 y=axis(grid=True, scale=scale("linear", domain=[0, 100])),
                 animate=True,
                 tooltip=True,
-                aria_label="Barras reactivas",
+                aria_label="Reactive bars",
                 height=260,
             ),
-            rx.button("Randomizar datos", on_click=ChartsState.randomize),
+            rx.button("Randomize data", on_click=ChartsState.randomize),
         ),
     ]
 
 
-# --- Marcas restantes del contrato v1 (sin ejemplo directo en el catálogo) --------
+# --- Remaining v1 contract marks (no direct example in the catalog) --------------
 
 
 def grammar_section() -> list[rx.Component]:
@@ -1306,12 +1306,12 @@ def grammar_section() -> list[rx.Component]:
         {"value": v} for v in sorted(round(4.5 + abs(hash(str(i))) % 40 / 10, 1) for i in range(15))
     ]
     return [
-        category_heading("Gramática v1 completa (marcas restantes)"),
+        category_heading("Complete v1 grammar (remaining marks)"),
         card(
-            "Strip plot con ticks",
-            "tick_x + rule_x (base de 13-interval-timeline)",
+            "Strip plot with ticks",
+            "tick_x + rule_x (basis of 13-interval-timeline)",
             "distribution",
-            "Distribución 1D con la mediana como regla.",
+            "1D distribution with the median as a rule.",
             tanstack_chart(
                 marks=[
                     tick_x(strip, x="value", stroke="#6366f1", stroke_width=2),
@@ -1322,16 +1322,16 @@ def grammar_section() -> list[rx.Component]:
                         stroke_dasharray="4 4",
                     ),
                 ],
-                x=axis(grid=True, nice=True, label="Valor"),
+                x=axis(grid=True, nice=True, label="Value"),
                 aria_label="Strip plot",
                 height=140,
             ),
         ),
         card(
-            "Rangos con ticks horizontales",
-            "tick_y (base de 03-range)",
+            "Ranges with horizontal ticks",
+            "tick_y (basis of 03-range)",
             "range",
-            "Mínimas (azul) y máximas (rojo) mensuales como ticks.",
+            "Monthly lows (blue) and highs (red) as ticks.",
             tanstack_chart(
                 marks=[
                     tick_y(D.SF_RANGE, y="low", x="month", stroke="#38bdf8", stroke_width=3),
@@ -1340,15 +1340,15 @@ def grammar_section() -> list[rx.Component]:
                 ],
                 x=axis(scale=scale("point", padding=0.5, domain=D.SF_MONTHS)),
                 y=axis(grid=True, label="°C"),
-                aria_label="Ticks de rangos",
+                aria_label="Range ticks",
                 height=240,
             ),
         ),
         card(
-            "Perfil vertical (orientación X)",
+            "Vertical profile (X orientation)",
             "line_x + area_x",
             "trend",
-            "Temperatura del agua según profundidad: x depende de y.",
+            "Water temperature by depth: x depends on y.",
             tanstack_chart(
                 marks=[
                     area_x(
@@ -1387,18 +1387,18 @@ def grammar_section() -> list[rx.Component]:
                         points=True,
                     ),
                 ],
-                x=axis(grid=True, label="Temperatura (°C)"),
-                y=axis(label="Profundidad (m)"),
+                x=axis(grid=True, label="Temperature (°C)"),
+                y=axis(label="Depth (m)"),
                 tooltip=True,
-                aria_label="Perfil de temperatura",
+                aria_label="Temperature profile",
                 height=300,
             ),
         ),
         card(
-            "Degradación ante marca no soportada",
+            "Degradation on an unsupported mark",
             "bridge · UNSUPPORTED_MARK",
-            "robustez",
-            "Una marca fuera del contrato v1 se omite con aviso; la página sobrevive (REQ-CH-013).",
+            "robustness",
+            "A mark outside the v1 contract is skipped with a notice; the page lives (REQ-CH-013).",
             tanstack_chart(
                 marks=[
                     bar_y(D.LETTERS_SORTED[:6], x="letter", y="frequency", fill="#64748b"),
@@ -1406,56 +1406,56 @@ def grammar_section() -> list[rx.Component]:
                 ],
                 x=axis(scale=scale("band", padding=0.18)),
                 y=axis(grid=True),
-                aria_label="Demo de degradación",
+                aria_label="Degradation demo",
                 height=220,
             ),
         ),
     ]
 
 
-# --- Fuera de alcance -------------------------------------------------------------
+# --- Out of scope -----------------------------------------------------------------
 
 OUT_OF_SCOPE = [
     (
-        "Distribución avanzada",
+        "Advanced distribution",
         "15-boxplot · 52-beeswarm · 43-hexbin · 39-density-contours · "
         "62-ridgeline · 63-violin · 51-faceted · 57-marginal-histograms",
-        "marcas box/violin/ridgeline/hexbin/densityContour + facetas",
+        "box/violin/ridgeline/hexbin/densityContour marks + facets",
     ),
     (
-        "Espacial y geografía",
+        "Spatial and geography",
         "37-delaunay · 38-contour · 42-vector-field · 40-geojson · "
-        "102–110 (choropleths, globo, rutas, proyecciones)",
+        "102–110 (choropleths, globe, routes, projections)",
         "geoShape, contour, vector, delaunay",
     ),
     (
-        "Jerarquía y redes",
+        "Hierarchy and networks",
         "36-hierarchy-tree · 74-treemap · 101-sunburst · 111-sankey · 40-force-directed",
         "treemap, sunburst, sankeyDiagram, forceLayout",
     ),
     (
-        "Polar avanzado",
+        "Advanced polar",
         "75/99-radar · 78-gauge · 97-rose · 98-needle-gauge · "
         "100-radial-bars · 106-polar-line · 107-polar-scatter",
-        "radialLine, radialBarAngle/Radius, radialDot, guías polares",
+        "radialLine, radialBarAngle/Radius, radialDot, polar guides",
     ),
     (
-        "Financieros y rectángulos",
+        "Financial and rectangles",
         "13-interval-timeline · 28-candlestick · 29-waterfall · 64-marimekko · 72-mixed-bars",
-        "rect con x1/x2·y1/y2, transform waterfall, stack",
+        "rect with x1/x2·y1/y2, waterfall transform, stack",
     ),
     (
-        "Interacción avanzada",
+        "Advanced interaction",
         "65-voronoi · 80/87/88-cursors · 81-interactive-legend · "
         "83-focus-context · 84-pinned-tooltip · 85-lanes · 89-brush · 90-zoom · 91-scrubber · "
         "92-editable-range",
-        "brushX, zoomX, crosshair, leyendas interactivas, tooltips custom",
+        "brushX, zoomX, crosshair, interactive legends, custom tooltips",
     ),
-    ("Motion", "112–117 (entrance, springs, morph, focus motion)", "extensión motion/spring"),
+    ("Motion", "112–117 (entrance, springs, morph, focus motion)", "motion/spring extension"),
     (
-        "Otros",
-        "32-change-arrows · 33-difference exacta · 44-framed-scatter",
-        "arrow, differenceY con signo, frame",
+        "Others",
+        "32-change-arrows · 33-difference (exact) · 44-framed-scatter",
+        "arrow, signed differenceY, frame",
     ),
 ]
 
@@ -1471,19 +1471,19 @@ def out_of_scope_card() -> rx.Component:
     ]
     return rx.card(
         rx.vstack(
-            rx.heading("Ejemplos del catálogo fuera del contrato v1", size="4"),
+            rx.heading("Catalog examples outside the v1 contract", size="4"),
             rx.text(
-                "Requieren marcas/extensiones planificadas para v0.2+ (PRD §5.2-5.3). "
-                "El bridge los degrada con aviso si se intentan (REQ-CH-013).",
+                "They require marks/extensions planned for v0.2+ (PRD §5.2-5.3). "
+                "The bridge degrades them with a notice if attempted (REQ-CH-013).",
                 size="2",
                 color_scheme="gray",
             ),
             rx.table.root(
                 rx.table.header(
                     rx.table.row(
-                        rx.table.column_header_cell("Grupo"),
-                        rx.table.column_header_cell("Ejemplos del catálogo"),
-                        rx.table.column_header_cell("Requiere"),
+                        rx.table.column_header_cell("Group"),
+                        rx.table.column_header_cell("Catalog examples"),
+                        rx.table.column_header_cell("Requires"),
                     )
                 ),
                 rx.table.body(*rows),
@@ -1496,18 +1496,18 @@ def out_of_scope_card() -> rx.Component:
     )
 
 
-# --- Página -----------------------------------------------------------------------
+# --- Page -------------------------------------------------------------------------
 
 
 def index() -> rx.Component:
     return rx.box(
         rx.vstack(
-            rx.heading("reflex-tanstack-charts — catálogo", size="7"),
+            rx.heading("reflex-tanstack-charts — catalog", size="7"),
             rx.text(
-                "Réplica de los ejemplos de tanstack.com/charts/catalog factibles con "
-                "el contrato v1 (14 marcas, 8 escalas, color, tooltip, eventos). "
-                "Transforms de datos en Python (_data.py): bins, stacking painter, "
-                "medias móviles, OLS, ranks, streamgraph.",
+                "Replica of the tanstack.com/charts/catalog examples that are feasible "
+                "with the v1 contract (14 marks, 8 scales, color, tooltip, events). "
+                "Data transforms in Python (_data.py): bins, painter stacking, "
+                "moving averages, OLS, ranks, streamgraph.",
                 color_scheme="gray",
             ),
             *grid_section(bars_section()),
@@ -1520,14 +1520,14 @@ def index() -> rx.Component:
             *grid_section(ranking_section()),
             *grid_section(interaction_section()),
             *grid_section(grammar_section()),
-            category_heading("Cobertura"),
+            category_heading("Coverage"),
             out_of_scope_card(),
             spacing="5",
             width="100%",
             padding_y="2em",
         ),
-        # rx.container topa en 1136 px (size="4"), demasiado estrecho para 3
-        # columnas de gráficas; una caja centrada da el ancho que necesitan.
+        # rx.container caps at 1136 px (size="4"), too narrow for 3 columns of
+        # charts; a centered box gives them the width they need.
         max_width="1800px",
         margin="0 auto",
         padding_x="1.5em",
@@ -1536,4 +1536,4 @@ def index() -> rx.Component:
 
 
 app = rx.App()
-app.add_page(index, title="reflex-tanstack-charts — catálogo TanStack")
+app.add_page(index, title="reflex-tanstack-charts — TanStack catalog")

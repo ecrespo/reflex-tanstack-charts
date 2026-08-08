@@ -1,11 +1,11 @@
-"""Helpers de marcas — las 14 marcas MUST del contrato ChartSpec v1.
+"""Mark helpers — the 14 MUST marks of the ChartSpec v1 contract.
 
-REQs: REQ-CH-003 (catálogo de marcas), REQ-CH-011 (serialización),
-REQ-CH-012 (validación fail-fast con datos literales; diferida con rx.Var).
+REQs: REQ-CH-003 (mark catalog), REQ-CH-011 (serialization),
+REQ-CH-012 (fail-fast validation with literal data; deferred with rx.Var).
 Specs: specs/api/component-api-v1.md §2.2 · specs/data-model/chartspec-schema.md §2.2
 
-Los nombres siguen la gramática TanStack en snake_case (Constitución Art. 3):
-`lineY` → `line_y`, etc. Las opciones se emiten en camelCase JS.
+Names follow the TanStack grammar in snake_case (Constitution Art. 3):
+`lineY` → `line_y`, etc. Options are emitted in JS camelCase.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from ._serialize import serialize_dataset
 
 _TAG = "[reflex-tanstack-charts]"
 
-#: Catálogo cerrado de curvas (DD-003 / API Spec §2.2). El bridge mapea a d3-shape.
+#: Closed curve catalog (DD-003 / API Spec §2.2). The bridge maps them to d3-shape.
 CURVES = {
     "linear",
     "monotone-x",
@@ -30,9 +30,9 @@ CURVES = {
     "catmull-rom",
 }
 
-#: Canales cuyo valor string referencia SIEMPRE un campo del dataset (Data Model §2.2).
-#: `color` es el canal de color dirigido por datos de TanStack; `fill`/`stroke` NO
-#: están aquí porque en 0.7.2 son colores CSS literales, nunca nombres de campo.
+#: Channels whose string value ALWAYS references a dataset field (Data Model §2.2).
+#: `color` is TanStack's data-driven color channel; `fill`/`stroke` are NOT listed
+#: here because in 0.7.2 they are literal CSS colors, never field names.
 _FIELD_CHANNELS = {"x", "y", "y1", "y2", "z", "color", "text", "value", "label", "key"}
 
 Mark = dict[str, Any]
@@ -48,7 +48,7 @@ def _is_var(value: Any) -> bool:
 
 
 def _validate_fields(type_: str, data: list[Any], channels: dict[str, Any]) -> None:
-    """REQ-CH-012: todo canal-campo debe existir en el primer registro (datos literales)."""
+    """REQ-CH-012: every field-channel must exist in the first record (literal data)."""
     if not data or not isinstance(data[0], dict):
         return
     fields = set(data[0])
@@ -85,16 +85,16 @@ def _mark(type_: str, data: Any, channels: dict[str, Any]) -> Mark:
     }
 
 
-# --- Líneas y áreas ----------------------------------------------------------
+# --- Lines and areas ---------------------------------------------------------
 
 
 def line_y(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Línea con y dependiente de x (TanStack `lineY`)."""
+    """Line with y depending on x (TanStack `lineY`)."""
     return _mark("lineY", data, {"x": x, "y": y, **options})
 
 
 def line_x(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Línea con x dependiente de y (TanStack `lineX`)."""
+    """Line with x depending on y (TanStack `lineX`)."""
     return _mark("lineX", data, {"x": x, "y": y, **options})
 
 
@@ -107,7 +107,7 @@ def area_y(
     y2: str | None = None,
     **options: Any,
 ) -> Mark:
-    """Área vertical (TanStack `areaY`): canal `y`, o banda `y1`+`y2`."""
+    """Vertical area (TanStack `areaY`): channel `y`, or band `y1`+`y2`."""
     if y is None and not (y1 and y2):
         raise ValueError(f"{_TAG} area_y requires channel 'y' or both 'y1' and 'y2'")
     return _mark("areaY", data, {"x": x, "y": y, "y1": y1, "y2": y2, **options})
@@ -122,66 +122,66 @@ def area_x(
     x2: str | None = None,
     **options: Any,
 ) -> Mark:
-    """Área horizontal (TanStack `areaX`): canal `x`, o banda `x1`+`x2`."""
+    """Horizontal area (TanStack `areaX`): channel `x`, or band `x1`+`x2`."""
     if x is None and not (x1 and x2):
         raise ValueError(f"{_TAG} area_x requires channel 'x' or both 'x1' and 'x2'")
     return _mark("areaX", data, {"x": x, "x1": x1, "x2": x2, "y": y, **options})
 
 
-# --- Barras y celdas ---------------------------------------------------------
+# --- Bars and cells ----------------------------------------------------------
 
 
 def bar_y(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Barras verticales (TanStack `barY`)."""
+    """Vertical bars (TanStack `barY`)."""
     return _mark("barY", data, {"x": x, "y": y, **options})
 
 
 def bar_x(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Barras horizontales (TanStack `barX`)."""
+    """Horizontal bars (TanStack `barX`)."""
     return _mark("barX", data, {"x": x, "y": y, **options})
 
 
 def cell(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Celdas de heatmap ordinal (TanStack `cell`)."""
+    """Ordinal heatmap cells (TanStack `cell`)."""
     return _mark("cell", data, {"x": x, "y": y, **options})
 
 
-# --- Puntos ------------------------------------------------------------------
+# --- Points ------------------------------------------------------------------
 
 
 def dot(data: Any, *, x: str, y: str, **options: Any) -> Mark:
-    """Puntos/scatter (TanStack `dot`). `r` acepta número o campo."""
+    """Dots/scatter (TanStack `dot`). `r` accepts a number or a field."""
     return _mark("dot", data, {"x": x, "y": y, **options})
 
 
-# --- Reglas y ticks ----------------------------------------------------------
+# --- Rules and ticks ---------------------------------------------------------
 
 
 def rule_x(values: Any, **options: Any) -> Mark:
-    """Reglas verticales en valores x de referencia (TanStack `ruleX`)."""
+    """Vertical rules at reference x values (TanStack `ruleX`)."""
     return _mark("ruleX", values, options)
 
 
 def rule_y(values: Any, **options: Any) -> Mark:
-    """Reglas horizontales en valores y de referencia (TanStack `ruleY`)."""
+    """Horizontal rules at reference y values (TanStack `ruleY`)."""
     return _mark("ruleY", values, options)
 
 
 def tick_x(data: Any, *, x: str, **options: Any) -> Mark:
-    """Ticks verticales (TanStack `tickX`)."""
+    """Vertical ticks (TanStack `tickX`)."""
     return _mark("tickX", data, {"x": x, **options})
 
 
 def tick_y(data: Any, *, y: str, **options: Any) -> Mark:
-    """Ticks horizontales (TanStack `tickY`)."""
+    """Horizontal ticks (TanStack `tickY`)."""
     return _mark("tickY", data, {"y": y, **options})
 
 
-# --- Texto -------------------------------------------------------------------
+# --- Text --------------------------------------------------------------------
 
 
 def text(data: Any, *, x: str, y: str, text: str | None = None, **options: Any) -> Mark:
-    """Etiquetas de texto (TanStack `text`). Requiere canal `text`."""
+    """Text labels (TanStack `text`). Requires the `text` channel."""
     if text is None:
         raise ValueError(f"{_TAG} text mark requires the 'text' channel (field with the label)")
     return _mark("text", data, {"x": x, "y": y, "text": text, **options})
@@ -191,8 +191,8 @@ def text(data: Any, *, x: str, y: str, text: str | None = None, **options: Any) 
 
 
 def pie(data: Any, *, value: str, label: str | None = None, **options: Any) -> Mark:
-    """Pie/donut (TanStack `pie`, export de `@tanstack/charts/polar`).
+    """Pie/donut (TanStack `pie`, exported from `@tanstack/charts/polar`).
 
-    `inner_radius` > 0 produce un donut.
+    `inner_radius` > 0 produces a donut.
     """
     return _mark("pie", data, {"value": value, "label": label, **options})

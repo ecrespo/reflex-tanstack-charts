@@ -1,9 +1,9 @@
-"""Tests del componente TanStackChart y del ChartSpec raíz.
+"""Tests for the TanStackChart component and the root ChartSpec.
 
-REQs cubiertos: REQ-CH-001 (componente compila), REQ-CH-005 (spec acepta Vars),
+REQs covered: REQ-CH-001 (component compiles), REQ-CH-005 (spec accepts Vars),
 REQ-CH-006/007 (tooltip/animate), REQ-CH-008/009 (triggers), REQ-CH-016 (sizing),
-REQ-CH-017 (aria warning), REQ-CH-018 (theme), REQ-CH-020 (pins npm),
-REQ-CH-023 (color ordinal).
+REQ-CH-017 (aria warning), REQ-CH-018 (theme), REQ-CH-020 (npm pins),
+REQ-CH-023 (ordinal color).
 Specs: specs/api/component-api-v1.md §2.1, §4 · specs/technical/architecture.md
 """
 
@@ -54,7 +54,7 @@ def test_req_ch_001_invalid_marks_raises():
         tanstack_chart(marks=["not-a-mark"], aria_label="t")
 
 
-# --- ChartSpec raíz (REQ-CH-006/007/023, versión) ---------------------------
+# --- Root ChartSpec (REQ-CH-006/007/023, version) ---------------------------
 
 
 def test_spec_version_is_1():
@@ -147,7 +147,7 @@ def test_req_ch_009_select_trigger_declared():
     assert "onSelect" in str(comp.render())
 
 
-# --- REQ-CH-005: spec acepta Vars -------------------------------------------
+# --- REQ-CH-005: spec accepts Vars ------------------------------------------
 
 
 def test_req_ch_005_spec_is_var_compatible():
@@ -156,13 +156,14 @@ def test_req_ch_005_spec_is_var_compatible():
     assert isinstance(comp, rx.Component)
 
 
-# --- REQ-CH-020: pins npm ----------------------------------------------------
+# --- REQ-CH-020: npm pins ----------------------------------------------------
 
 
 def test_req_ch_020_pinned_lib_dependencies():
-    # Enmienda 2026-08-07 (Delta bridge-dom-host): el bridge monta con el DOM host
-    # vanilla de @tanstack/charts; el adaptador React (@tanstack/react-charts) ya
-    # no es dependencia (evita el problema de doble React en vite dev).
+    # Amendment 2026-08-07 (Delta bridge-dom-host): the bridge mounts with the
+    # vanilla DOM host of @tanstack/charts; the React adapter
+    # (@tanstack/react-charts) is no longer a dependency (this avoids the double
+    # React problem in vite dev).
     comp = tanstack_chart(marks=MARKS, aria_label="t")
     deps = set(comp.lib_dependencies)
     assert deps == {

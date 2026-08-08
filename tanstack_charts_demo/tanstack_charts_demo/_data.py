@@ -1,8 +1,8 @@
-"""Datasets sintéticos y transforms en Python para la galería del catálogo.
+"""Synthetic datasets and Python-side transforms for the catalog gallery.
 
-Filosofía TanStack (Tech Design §"ownership"): la preparación de datos
-(bins, medias móviles, stacking, regresión, ranks, normalización) vive en la
-capa de datos — aquí, Python puro y determinista (seed fija).
+TanStack philosophy (Tech Design §"ownership"): data preparation (bins, moving
+averages, stacking, regression, ranks, normalization) lives in the data layer —
+here, pure deterministic Python (fixed seed).
 """
 
 from __future__ import annotations
@@ -15,21 +15,19 @@ rng = random.Random(7)
 
 
 def quantize(rows, field, edges, colors, labels=None, out="bucket"):
-    """Cuantiza un campo numérico en cubetas ordinales para colorear heatmaps.
+    """Quantize a numeric field into ordinal buckets to color heatmaps.
 
-    El contrato v1 solo expone escalas de color ordinales (REQ-CH-023): en
-    TanStack 0.7.2 `fill` es un color CSS literal y el canal dirigido por datos
-    es `color`, que se pinta con la escala de color del gráfico. Por eso los
-    heatmaps cuantizan aquí (capa de datos) y colorean por cubeta.
+    The v1 contract only exposes ordinal color scales (REQ-CH-023): in TanStack
+    0.7.2 `fill` is a literal CSS color and the data-driven channel is `color`,
+    which is painted with the chart's color scale. That is why heatmaps quantize
+    here (data layer) and color by bucket.
 
-    `edges` son los cortes superiores exclusivos; hace falta un color más que
-    cortes. Devuelve `(rows_con_cubeta, domain, range)` listo para
+    `edges` are the exclusive upper cuts; one more color than cuts is required.
+    Returns `(rows_with_bucket, domain, range)`, ready for
     `scale("ordinal", domain=…, range=…)`.
     """
     if len(colors) != len(edges) + 1:
-        raise ValueError(
-            f"quantize({field!r}): {len(edges)} cortes necesitan {len(edges) + 1} colores"
-        )
+        raise ValueError(f"quantize({field!r}): {len(edges)} cuts require {len(edges) + 1} colors")
     if labels is None:
         labels = [f"< {edges[0]:g}"]
         labels += [f"{lo:g}–{hi:g}" for lo, hi in zip(edges, edges[1:], strict=False)]
@@ -44,7 +42,7 @@ def quantize(rows, field, edges, colors, labels=None, out="bucket"):
     return [{**r, out: bucket_of(r[field])} for r in rows], labels, list(colors)
 
 
-# --- Letras (pie, donut, waffle, barras ordenadas) ----------------------------
+# --- Letters (pie, donut, waffle, sorted bars) --------------------------------
 
 LETTERS = [
     {"letter": "E", "frequency": 0.127},
@@ -80,7 +78,7 @@ PALETTE = [
 
 
 def waffle_cells(rows: list[dict], value: str, label: str, size: int = 10) -> list[dict]:
-    """Asigna celdas de una cuadrícula size×size proporcionalmente al valor."""
+    """Assign cells of a size×size grid proportionally to the value."""
     total = sum(r[value] for r in rows)
     cells: list[dict] = []
     acc = 0.0
@@ -102,7 +100,7 @@ def waffle_cells(rows: list[dict], value: str, label: str, size: int = 10) -> li
 
 WAFFLE = waffle_cells(LETTERS_SORTED[:8], "frequency", "letter")
 
-# --- Serie tipo AAPL (trend, change, distribution, relationship) --------------
+# --- AAPL-like series (trend, change, distribution, relationship) -------------
 
 
 def _walk(n: int, start: float, vol: float) -> list[float]:
@@ -116,7 +114,7 @@ _D0 = date(2025, 9, 1)
 _CLOSES = _walk(180, 64.0, 0.018)
 AAPL = [{"day": _D0 + timedelta(days=i), "close": round(v, 2)} for i, v in enumerate(_CLOSES)]
 
-#: line-gaps: huecos estacionales (None corta la línea)
+#: line-gaps: seasonal gaps (None breaks the line)
 AAPL_GAPS = [
     {"day": r["day"], "close": (None if 40 <= i < 55 or 120 <= i < 130 else r["close"])}
     for i, r in enumerate(AAPL)
@@ -162,16 +160,16 @@ AAPL_EXTREMA = [
     {
         "day": AAPL[_imin]["day"],
         "close": AAPL[_imin]["close"],
-        "label": f"Mín {AAPL[_imin]['close']}",
+        "label": f"Min {AAPL[_imin]['close']}",
     },
     {
         "day": AAPL[_imax]["day"],
         "close": AAPL[_imax]["close"],
-        "label": f"Máx {AAPL[_imax]['close']}",
+        "label": f"Max {AAPL[_imax]['close']}",
     },
 ]
 
-#: lag-1: dispersión close[t-1] vs close[t] (retornos)
+#: lag-1: scatter of close[t-1] vs close[t] (returns)
 AAPL_LAG = [
     {
         "prev": round((_closes[i - 1] / _closes[i - 2] - 1) * 100, 2),
@@ -180,7 +178,7 @@ AAPL_LAG = [
     for i in range(2, len(_closes))
 ]
 
-#: histograma de retornos diarios (%)
+#: histogram of daily returns (%)
 _RETURNS = [round((_closes[i] / _closes[i - 1] - 1) * 100, 3) for i in range(1, len(_closes))]
 
 
@@ -201,17 +199,17 @@ RETURNS_ECDF = [
     {"value": v, "p": round((i + 1) / len(_RETURNS), 3)} for i, v in enumerate(sorted(_RETURNS))
 ]
 
-# --- Industrias (multilínea, stacked, streamgraph, bump, indexado) ------------
+# --- Industries (multi-line, stacked, streamgraph, bump, indexed) -------------
 
-INDUSTRY_NAMES = ["Construcción", "Manufactura", "Servicios", "Agro"]
-_BASES = {"Construcción": 9.0, "Manufactura": 6.5, "Servicios": 4.2, "Agro": 7.1}
+INDUSTRY_NAMES = ["Construction", "Manufacturing", "Services", "Agriculture"]
+_BASES = {"Construction": 9.0, "Manufacturing": 6.5, "Services": 4.2, "Agriculture": 7.1}
 MONTHS = [date(2024, 1, 1) + timedelta(days=30 * i) for i in range(24)]
 
 INDUSTRIES: list[dict] = []
 for name in INDUSTRY_NAMES:
     v = _BASES[name]
     for m in MONTHS:
-        v = max(1.0, v + rng.gauss(-0.02 if name == "Servicios" else 0.0, 0.35))
+        v = max(1.0, v + rng.gauss(-0.02 if name == "Services" else 0.0, 0.35))
         INDUSTRIES.append({"month": m, "industry": name, "rate": round(v, 2)})
 
 
@@ -221,14 +219,14 @@ def by_industry(name: str) -> list[dict]:
 
 INDUSTRY_END_LABELS = [{**by_industry(n)[-1], "label": n} for n in INDUSTRY_NAMES]
 
-#: indexado a 100 en el primer mes
+#: indexed to 100 on the first month
 INDUSTRIES_INDEXED = []
 for n in INDUSTRY_NAMES:
     rows = by_industry(n)
     base = rows[0]["rate"]
     INDUSTRIES_INDEXED += [{**r, "index": round(r["rate"] / base * 100, 1)} for r in rows]
 
-#: stacked / normalized / streamgraph (painter y bandas por serie)
+#: stacked / normalized / streamgraph (painter technique and per-series bands)
 STACKED_AREAS: dict[str, list[dict]] = {}
 NORMALIZED_AREAS: dict[str, list[dict]] = {}
 STREAM_AREAS: dict[str, list[dict]] = {}
@@ -247,7 +245,7 @@ for i, m in enumerate(MONTHS):
         )
         run += vals[n]
 
-#: bump: rank mensual por industria (1 = mayor desempleo)
+#: bump: monthly rank per industry (1 = highest unemployment)
 BUMP: list[dict] = []
 for i, m in enumerate(MONTHS):
     ordered = sorted(INDUSTRY_NAMES, key=lambda n: -by_industry(n)[i]["rate"])
@@ -255,13 +253,13 @@ for i, m in enumerate(MONTHS):
         BUMP.append({"month": m, "industry": n, "rank": rank})
 
 INDUSTRY_COLORS = {
-    "Construcción": "#f59e0b",
-    "Manufactura": "#ef4444",
-    "Servicios": "#4f46e5",
-    "Agro": "#10b981",
+    "Construction": "#f59e0b",
+    "Manufacturing": "#ef4444",
+    "Services": "#4f46e5",
+    "Agriculture": "#10b981",
 }
 
-# --- Pingüinos (bar, comparison, relationship) --------------------------------
+# --- Penguins (bar, comparison, relationship) ---------------------------------
 
 SPECIES = ["Adelie", "Chinstrap", "Gentoo"]
 _MASS = {"Adelie": (3700, 460), "Chinstrap": (3730, 380), "Gentoo": (5070, 500)}
@@ -281,7 +279,7 @@ for sp in SPECIES:
             }
         )
 
-#: grouped bars: conteo por especie×sexo (etiqueta compuesta)
+#: grouped bars: count per species×sex (composite label)
 PENGUIN_GROUPS = [
     {
         "group": f"{sp} · {'♂' if sex == 'MALE' else '♀'}",
@@ -293,7 +291,7 @@ PENGUIN_GROUPS = [
     for sex in ["MALE", "FEMALE"]
 ]
 
-#: reducer bars: masa media por especie
+#: reducer bars: mean mass per species
 PENGUIN_MEANS = [
     {
         "species": sp,
@@ -305,7 +303,7 @@ PENGUIN_MEANS = [
     for sp in SPECIES
 ]
 
-#: pirámide: por especie, machos a la izquierda (negativo)
+#: pyramid: per species, males on the left (negative)
 PENGUIN_PYRAMID_M = [
     {"species": sp, "count": -sum(1 for p in PENGUINS if p["species"] == sp and p["sex"] == "MALE")}
     for sp in SPECIES
@@ -320,7 +318,7 @@ PENGUIN_PYRAMID_F = [
 
 
 def ols(rows: list[dict], xf: str, yf: str) -> list[dict]:
-    """Regresión lineal simple; retorna los dos extremos de la recta."""
+    """Simple linear regression; returns the two endpoints of the fitted line."""
     n = len(rows)
     sx = sum(r[xf] for r in rows)
     sy = sum(r[yf] for r in rows)
@@ -338,7 +336,7 @@ PENGUIN_REGRESSION = ols(PENGUINS, "mass", "flipper")
 #: many-point scatter (performance)
 MANY_POINTS = [{"x": round(rng.gauss(0, 1), 3), "y": round(rng.gauss(0, 1), 3)} for _ in range(400)]
 
-#: binned heatmap 2D de MANY_POINTS
+#: 2D binned heatmap of MANY_POINTS
 BINNED_2D: list[dict] = []
 _counts: dict[tuple[int, int], int] = {}
 for p in MANY_POINTS:
@@ -347,7 +345,7 @@ for p in MANY_POINTS:
 for (bx, by), c in sorted(_counts.items()):
     BINNED_2D.append({"xbin": f"{bx}…{bx + 1}", "ybin": f"{by}…{by + 1}", "count": c})
 
-#: rampa secuencial cuantizada del conteo (canal `color` del heatmap)
+#: quantized sequential ramp of the count (heatmap `color` channel)
 BINNED_2D, BINNED_2D_BUCKETS, BINNED_2D_COLORS = quantize(
     BINNED_2D,
     "count",
@@ -355,11 +353,11 @@ BINNED_2D, BINNED_2D_BUCKETS, BINNED_2D_COLORS = quantize(
     ["#eff6ff", "#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"],
 )
 
-# --- Ciudades (ranking, lollipop, dumbbell, slopegraph) ------------------------
+# --- Cities (ranking, lollipop, dumbbell, slopegraph) -------------------------
 
 CITIES = [
-    {"city": "Ciudad de México", "v2019": 62, "v2024": 71},
-    {"city": "Bogotá", "v2019": 55, "v2024": 66},
+    {"city": "Mexico City", "v2019": 62, "v2024": 71},
+    {"city": "Bogota", "v2019": 55, "v2024": 66},
     {"city": "Buenos Aires", "v2019": 58, "v2024": 54},
     {"city": "Lima", "v2019": 41, "v2024": 52},
     {"city": "Santiago", "v2019": 68, "v2024": 74},
@@ -368,14 +366,14 @@ CITIES = [
 ]
 CITIES_SORTED = sorted(CITIES, key=lambda r: -r["v2024"])
 
-#: dumbbell/slopegraph en formato largo
+#: dumbbell/slopegraph in long format
 CITIES_LONG = [
     {"city": r["city"], "year": y, "value": r[f"v{y}"]} for r in CITIES for y in ("2019", "2024")
 ]
 
-# --- Temperaturas SF (range band, calendar) ------------------------------------
+# --- SF temperatures (range band, calendar) -----------------------------------
 
-SF_MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+SF_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 SF_RANGE = [
     {
         "month": m,
@@ -385,20 +383,20 @@ SF_RANGE = [
     for i, m in enumerate(SF_MONTHS)
 ]
 
-DAYS_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 CALENDAR = [
-    {"week": f"S{w + 1:02d}", "day": d, "mm": round(max(0.0, rng.gauss(2.5, 3.0)), 1)}
+    {"week": f"W{w + 1:02d}", "day": d, "mm": round(max(0.0, rng.gauss(2.5, 3.0)), 1)}
     for w in range(26)
-    for d in DAYS_ES
+    for d in DAYS
 ]
 
-#: intensidad de lluvia cuantizada (canal `color` del calendario)
+#: quantized rainfall intensity (calendar `color` channel)
 CALENDAR, CALENDAR_BUCKETS, CALENDAR_COLORS = quantize(
     CALENDAR,
     "mm",
     [0.1, 2, 5, 8],
     ["#f1f5f9", "#cffafe", "#67e8f9", "#0891b2", "#164e63"],
-    labels=["seco", "0–2 mm", "2–5 mm", "5–8 mm", "≥ 8 mm"],
+    labels=["dry", "0–2 mm", "2–5 mm", "5–8 mm", "≥ 8 mm"],
 )
 
 # --- Quantile ribbon / error bars ---------------------------------------------
@@ -426,9 +424,9 @@ ERROR_SEGMENTS = [
     {"trial": r["trial"], "y": v, "seg": r["trial"]} for r in ERRORS for v in (r["lo"], r["hi"])
 ]
 
-# --- Likert divergente ----------------------------------------------------------
+# --- Diverging Likert ----------------------------------------------------------
 
-LIKERT_STATEMENTS = ["Facilidad de uso", "Documentación", "Rendimiento", "Soporte", "Precio"]
+LIKERT_STATEMENTS = ["Ease of use", "Documentation", "Performance", "Support", "Price"]
 LIKERT: list[dict] = []
 for s in LIKERT_STATEMENTS:
     sd_, d = rng.randint(2, 12), rng.randint(5, 18)
@@ -436,20 +434,20 @@ for s in LIKERT_STATEMENTS:
     a, sa = rng.randint(15, 35), rng.randint(8, 25)
     LIKERT.append({"statement": s, "sd": sd_, "d": d, "n": n, "a": a, "sa": sa})
 
-#: painter por lado: izquierda acumulado negativo, derecha positivo
+#: painter per side: left cumulative negative, right positive
 LIKERT_LEFT_OUTER = [{"statement": r["statement"], "v": -(r["sd"] + r["d"])} for r in LIKERT]
 LIKERT_LEFT_INNER = [{"statement": r["statement"], "v": -r["d"]} for r in LIKERT]
 LIKERT_RIGHT_OUTER = [{"statement": r["statement"], "v": r["n"] + r["a"] + r["sa"]} for r in LIKERT]
 LIKERT_RIGHT_MID = [{"statement": r["statement"], "v": r["n"] + r["a"]} for r in LIKERT]
 LIKERT_RIGHT_INNER = [{"statement": r["statement"], "v": r["n"]} for r in LIKERT]
 
-# --- Paralelas (cars) -----------------------------------------------------------
+# --- Parallel coordinates (cars) ------------------------------------------------
 
-_CAR_DIMS = ["Potencia", "Peso", "Consumo", "Aceleración"]
+_CAR_DIMS = ["Power", "Weight", "Fuel use", "Acceleration"]
 PARALLEL: list[dict] = []
 for i in range(14):
-    kind = "deportivo" if i % 2 else "familiar"
-    base = {"deportivo": [0.8, 0.45, 0.75, 0.85], "familiar": [0.35, 0.7, 0.4, 0.3]}[kind]
+    kind = "sports" if i % 2 else "family"
+    base = {"sports": [0.8, 0.45, 0.75, 0.85], "family": [0.35, 0.7, 0.4, 0.3]}[kind]
     for dim, b in zip(_CAR_DIMS, base, strict=True):
         PARALLEL.append(
             {
@@ -460,14 +458,14 @@ for i in range(14):
             }
         )
 
-# --- Log scatter (paquetes npm) --------------------------------------------------
+# --- Log scatter (npm packages) --------------------------------------------------
 
 LOG_SCATTER = [
     {"size_kb": round(10 ** rng.uniform(0.5, 3.5), 1), "downloads": round(10 ** rng.uniform(2, 7))}
     for _ in range(60)
 ]
 
-# --- Connected scatter (inflación vs desempleo por año) --------------------------
+# --- Connected scatter (inflation vs unemployment per year) ----------------------
 
 CONNECTED = []
 _u, _f = 6.0, 3.0
@@ -476,9 +474,9 @@ for year in range(2016, 2027):
     _f = max(0.5, _f + rng.gauss(0.1, 0.6))
     CONNECTED.append({"year": str(year), "unemployment": round(_u, 2), "inflation": round(_f, 2)})
 
-# --- Stacked bars (revenue por producto, painter) --------------------------------
+# --- Stacked bars (revenue per product, painter) ---------------------------------
 
-PRODUCTS = ["Core", "Add-ons", "Servicios"]
+PRODUCTS = ["Core", "Add-ons", "Services"]
 PRODUCT_COLORS = ["#4f46e5", "#0ea5e9", "#94a3b8"]
 QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
 STACKED_BARS: dict[str, list[dict]] = {p: [] for p in PRODUCTS}
@@ -489,7 +487,7 @@ for q in QUARTERS:
         cum += v
         STACKED_BARS[p].append({"quarter": q, "cum": round(cum, 1)})
 
-# --- Donuts anidados y con total --------------------------------------------------
+# --- Nested donuts and donut with total ------------------------------------------
 
 NESTED_INNER = [
     {"pkg": "analytics", "size": 42},

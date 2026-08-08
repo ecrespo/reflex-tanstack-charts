@@ -1,7 +1,7 @@
-"""Snapshots del contrato ChartSpec v1 — las 14 marcas MUST.
+"""Snapshots of the ChartSpec v1 contract — the 14 MUST marks.
 
-REQs cubiertos: REQ-CH-002/REQ-CH-003 (cada marca produce el MarkSpec exacto que el
-bridge interpreta). Cualquier cambio aquí es un cambio de contrato → Data Model §5.
+REQs covered: REQ-CH-002/REQ-CH-003 (each mark produces the exact MarkSpec the
+bridge interprets). Any change here is a contract change → Data Model §5.
 Specs: specs/data-model/chartspec-schema.md §2.2
 """
 

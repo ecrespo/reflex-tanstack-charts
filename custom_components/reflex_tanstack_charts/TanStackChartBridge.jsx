@@ -1,25 +1,24 @@
 /**
- * TanStackChartBridge — interpreta un ChartSpec JSON (contrato v1) y lo compila a
- * defineChart de @tanstack/charts, renderizando <Chart> de @tanstack/react-charts.
+ * TanStackChartBridge — interprets a JSON ChartSpec (v1 contract) and compiles it to
+ * defineChart from @tanstack/charts, rendering it through the vanilla DOM host.
  *
- * REQs: REQ-CH-002/003 (registro de marcas), REQ-CH-004 (registro de escalas),
- * REQ-CH-006/007 (tooltip/animate), REQ-CH-008/009/010 (eventos sanitizados),
- * REQ-CH-011 (rehidratación temporal), REQ-CH-013/014/015 (degradación),
- * REQ-CH-023 (color ordinal).
+ * REQs: REQ-CH-002/003 (mark registry), REQ-CH-004 (scale registry),
+ * REQ-CH-006/007 (tooltip/animate), REQ-CH-008/009/010 (sanitized events),
+ * REQ-CH-011 (temporal rehydration), REQ-CH-013/014/015 (graceful degradation),
+ * REQ-CH-023 (ordinal color).
  * Specs: specs/technical/architecture.md DD-001/002/003 · specs/data-model §2.
- * Sin eval / new Function / dangerouslySetInnerHTML (Constitución Art. 2).
+ * No eval / new Function / dangerouslySetInnerHTML (Constitution Art. 2).
  */
 
-// ARQUITECTURA SIN HOOKS NI ADAPTADOR REACT (Delta 2026-08-07 bridge-dom-host):
-// Vite (dev) sirve este archivo desde /public/external/... fuera del grafo
-// optimizado; sus imports de "react" pueden resolver a una copia pre-empaquetada
-// distinta a la de react-dom (hashes ?v= diferentes). Con dos copias, el
-// dispatcher de hooks es null → "resolveDispatcher() is null" en useMemo — tanto
-// en este archivo como DENTRO de <Chart> de @tanstack/react-charts. Por eso el
-// bridge monta con el DOM host vanilla de @tanstack/charts (framework-free, sin
-// ningún hook) desde un class component: las clases y la creación de elementos
-// funcionan entre copias de React; los hooks no. Memoización por identidad del
-// spec vía WeakMap (REQ-CH-005).
+// ARCHITECTURE WITHOUT HOOKS OR THE REACT ADAPTER (Delta 2026-08-07 bridge-dom-host):
+// Vite (dev) serves this file from /public/external/..., outside the optimized
+// graph; its "react" imports may resolve to a pre-bundled copy different from the
+// one react-dom uses (different ?v= hashes). With two copies, the hook dispatcher
+// is null → "resolveDispatcher() is null" in useMemo — both in this file and
+// INSIDE <Chart> from @tanstack/react-charts. That is why the bridge mounts with
+// the vanilla DOM host of @tanstack/charts (framework-free, no hooks at all) from
+// a class component: classes and element creation work across React copies; hooks
+// do not. Memoization by spec identity via WeakMap (REQ-CH-005).
 import React from "react"
 import {
   defineChart,
@@ -60,11 +59,11 @@ import {
 const TAG = "[reflex-tanstack-charts]"
 const SUPPORTED_SPEC_VERSION = 1
 
-// --- Registros (DD-001/DD-002) ----------------------------------------------
+// --- Registries (DD-001/DD-002) ---------------------------------------------
 
 /**
- * Marcas cartesianas 1:1. `pie` se maneja aparte: en 0.7.2 `pie()` es un
- * transform de slices y la marca real es `polar({marks:[radialArc(...)]})`.
+ * 1:1 cartesian marks. `pie` is handled separately: in 0.7.2 `pie()` is a slice
+ * transform and the actual mark is `polar({marks:[radialArc(...)]})`.
  */
 const MARK_REGISTRY = {
   lineY,
@@ -95,7 +94,7 @@ function makePieMark(rows, options) {
     ...rest,
   }
   if (label !== undefined && arcOptions.z === undefined && arcOptions.fill === undefined) {
-    arcOptions.z = label // color por slice a partir de la etiqueta
+    arcOptions.z = label // per-slice color derived from the label
   }
   if (innerRadius !== undefined) arcOptions.innerRadius = innerRadius
   if (outerRadius !== undefined) arcOptions.outerRadius = outerRadius
@@ -120,7 +119,7 @@ const CURVES = {
   "catmull-rom": curveCatmullRom,
 }
 
-// --- Escalas y formatos (REQ-CH-004, DD-003) --------------------------------
+// --- Scales and formats (REQ-CH-004, DD-003) --------------------------------
 
 function makeScaleFactory(scaleSpec) {
   if (!scaleSpec) return undefined
@@ -147,7 +146,7 @@ function makeScaleFactory(scaleSpec) {
 function makeTickFormat(fmt) {
   if (!fmt) return undefined
   const locale = fmt.locale || "en-US"
-  // Formato de fechas: presencia de claves Intl.DateTimeFormat
+  // Date formatting: detected by the presence of Intl.DateTimeFormat keys
   if (fmt.date_style || fmt.month || fmt.day || fmt.year || fmt.hour || fmt.minute) {
     const options = { timeZone: fmt.time_zone || "UTC" }
     if (fmt.date_style) options.dateStyle = fmt.date_style
@@ -195,7 +194,7 @@ function buildAxis(axisSpec) {
   return Object.keys(out).length ? out : undefined
 }
 
-// --- Datos y opciones (REQ-CH-011) ------------------------------------------
+// --- Data and options (REQ-CH-011) ------------------------------------------
 
 function rehydrate(data, temporalFields) {
   if (!Array.isArray(data)) return []
@@ -223,14 +222,14 @@ function mapOptions(options) {
   return out
 }
 
-// --- Definición (DD-001) -----------------------------------------------------
+// --- Definition (DD-001) -----------------------------------------------------
 
 /**
- * Inferencia de escalas: TanStack Charts 0.7.2 (versión publicada) exige una
- * escala configurada por eje para toda marca cartesiana — sin ella el
- * SSR/prerender lanza "Chart scale 'y' requires a configured scale". Se infiere
- * del primer valor de los canales del eje: Date→utc, number→linear,
- * string→band (si hay barras/celdas en el eje) o point.
+ * Scale inference: TanStack Charts 0.7.2 (the published version) requires a
+ * configured scale per axis for every cartesian mark — without one, SSR/prerender
+ * throws "Chart scale 'y' requires a configured scale". It is inferred from the
+ * first value of the axis channels: Date→utc, number→linear, string→band (if
+ * there are bars/cells on that axis) or point.
  */
 const AXIS_CHANNELS = { x: ["x", "x1", "x2"], y: ["y", "y1", "y2"] }
 const RULE_MARKS = { x: "ruleX", y: "ruleY" }
@@ -276,12 +275,12 @@ function buildDefinition(spec, problems) {
     if (!SUPPORTED_MARK_TYPES.has(mark.type)) {
       // REQ-CH-013
       console.warn(`${TAG} UNSUPPORTED_MARK:`, mark.type)
-      problems.push(`Marca no soportada: ${mark.type}`)
+      problems.push(`Unsupported mark: ${mark.type}`)
       continue
     }
     const data = rehydrate(mark.data, mark.temporal_fields)
     if (!data.length) {
-      // REQ-CH-014: dataset vacío → omitir marca sin romper
+      // REQ-CH-014: empty dataset → skip the mark without breaking
       continue
     }
     if (mark.type === "pie") {
@@ -310,10 +309,10 @@ function buildDefinition(spec, problems) {
     const colorScale = makeScaleFactory(spec.color.scale)
     if (colorScale) {
       definition.color = { scale: colorScale }
-      // `createColorScale` trata un factory como inferible y reemplaza su dominio
-      // por los valores observados (orden de aparición), descartando el que se
-      // configuró aquí. Reenviarlos como opciones de color los hace autoritativos,
-      // así que valor→color es determinista y no depende del orden de las filas.
+      // `createColorScale` treats a factory as inferable and replaces its domain
+      // with the observed values (in order of appearance), discarding the one
+      // configured here. Forwarding them as color options makes them authoritative,
+      // so value→color is deterministic and does not depend on row order.
       const { domain, range } = spec.color.scale
       if (domain !== undefined) definition.color.domain = domain
       if (range !== undefined) definition.color.range = range
@@ -324,7 +323,7 @@ function buildDefinition(spec, problems) {
   return defineChart(definition)
 }
 
-// --- Eventos (REQ-CH-008/009/010, DD-005) ------------------------------------
+// --- Events (REQ-CH-008/009/010, DD-005) -------------------------------------
 
 function sanitizeValue(value) {
   if (value instanceof Date) return value.toISOString()
@@ -354,7 +353,7 @@ function sanitizePoint(point) {
   }
 }
 
-// --- Placeholders y error boundary (REQ-CH-013/015) --------------------------
+// --- Placeholders and error boundary (REQ-CH-013/015) ------------------------
 
 function Placeholder({ children }) {
   return (
@@ -377,13 +376,13 @@ function Placeholder({ children }) {
   )
 }
 
-// --- Compilación memoizada sin hooks (REQ-CH-005) -----------------------------
+// --- Memoized compilation without hooks (REQ-CH-005) -------------------------
 
 const definitionCache = new WeakMap()
 
 function compileSpec(spec) {
   if (!spec || typeof spec !== "object") {
-    return { definition: null, problems: ["ChartSpec ausente"], versionError: false }
+    return { definition: null, problems: ["Missing ChartSpec"], versionError: false }
   }
   const cached = definitionCache.get(spec)
   if (cached) return cached
@@ -406,7 +405,7 @@ function compileSpec(spec) {
   return result
 }
 
-// --- Componente (class, monta el DOM host vanilla; REQ-CH-015 vía try/catch) --
+// --- Component (class, mounts the vanilla DOM host; REQ-CH-015 via try/catch) -
 
 export class TanStackChartBridge extends React.Component {
   constructor(props) {
@@ -447,7 +446,7 @@ export class TanStackChartBridge extends React.Component {
       }
       if (this.state.mountError) this.setState({ mountError: null })
     } catch (error) {
-      // REQ-CH-015: nunca propagar al árbol de la app
+      // REQ-CH-015: never propagate to the app tree
       console.error(`${TAG} RENDER_ERROR:`, error)
       this.teardown()
       this.setState({ mountError: String(error) })
@@ -492,14 +491,14 @@ export class TanStackChartBridge extends React.Component {
       <div style={{ position: "relative", width: "100%", ...(themeVars || {}) }}>
         {versionError ? (
           <Placeholder>
-            {`${TAG} ChartSpec version ${spec.version} no soportada; actualiza reflex-tanstack-charts`}
+            {`${TAG} ChartSpec version ${spec.version} is not supported; update reflex-tanstack-charts`}
           </Placeholder>
         ) : this.state.mountError ? (
-          <Placeholder>{`${TAG} error de render: ${this.state.mountError}`}</Placeholder>
+          <Placeholder>{`${TAG} render error: ${this.state.mountError}`}</Placeholder>
         ) : definition ? (
           <div ref={this.containerRef} style={{ width: "100%" }} />
         ) : (
-          <Placeholder>{`${TAG} sin marcas renderizables`}</Placeholder>
+          <Placeholder>{`${TAG} no renderable marks`}</Placeholder>
         )}
         {problems.length > 0 && !versionError ? (
           <Placeholder>{problems.join(" · ")}</Placeholder>

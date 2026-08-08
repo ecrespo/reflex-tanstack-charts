@@ -218,7 +218,7 @@ __marimo__/
 .streamlit/secrets.toml
 .idea/
 
-# Reflex — artefactos locales de ejecución/compilación de la demo
+# Reflex — local run/build artifacts of the demo
 .web/
 .states/
 reflex.lock/
@@ -226,7 +226,8 @@ assets/external/
 frontend.zip
 backend.zip
 
-# Notas de otro proyecto que quedaron en el working tree; no pertenecen a este repo
+# Notes from another project left in the working tree; they do not belong to this repo
 analisis-radio-garden.md
 factibilidad-radio-vintage-reflex.md
 factibilidad-radio-3d-botones-threejs.md
+tanstack_charts_demo/frontend.zip

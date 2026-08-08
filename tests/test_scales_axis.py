@@ -1,6 +1,6 @@
-"""Tests de escalas y ejes.
+"""Tests for scales and axes.
 
-REQs cubiertos: REQ-CH-004 (catálogo de escalas), formatos declarativos (DD-003).
+REQs covered: REQ-CH-004 (scale catalog), declarative formats (DD-003).
 Specs: specs/api/component-api-v1.md §2.3 · specs/data-model/chartspec-schema.md §2.4-2.5
 """
 
@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 import pytest
 from reflex_tanstack_charts import axis, scale
 
-UTC = timezone.utc  # compat <3.11 (ver pyproject: ignore UP017)
+UTC = timezone.utc  # <3.11 compat (see pyproject: ignore UP017)
 
 SUPPORTED = ["linear", "band", "point", "ordinal", "utc", "time", "log", "sqrt"]
 

@@ -1,8 +1,8 @@
-"""Componente Reflex `TanStackChart` + fábrica `tanstack_chart`.
+"""Reflex component `TanStackChart` + `tanstack_chart` factory.
 
-REQs: REQ-CH-001 (componente vía asset local), REQ-CH-005 (spec Var-compatible),
-REQ-CH-006/007 (tooltip/animate), REQ-CH-008/009/010 (eventos), REQ-CH-016 (sizing),
-REQ-CH-017 (aria warning), REQ-CH-018 (theme), REQ-CH-020 (pins npm), REQ-CH-023 (color).
+REQs: REQ-CH-001 (component via local asset), REQ-CH-005 (Var-compatible spec),
+REQ-CH-006/007 (tooltip/animate), REQ-CH-008/009/010 (events), REQ-CH-016 (sizing),
+REQ-CH-017 (aria warning), REQ-CH-018 (theme), REQ-CH-020 (npm pins), REQ-CH-023 (color).
 Specs: specs/api/component-api-v1.md §2.1, §4 · specs/technical/architecture.md §3.2, DD-001/002/005
 """
 
@@ -15,8 +15,8 @@ import reflex as rx
 
 _TAG = "[reflex-tanstack-charts]"
 
-#: REQ-CH-020 / Constitución Art. 4 — versiones exactas verificadas contra npm
-#: el 2026-08-07 (ver Tech Design §10).
+#: REQ-CH-020 / Constitution Art. 4 — exact versions verified against npm
+#: on 2026-08-07 (see Tech Design §10).
 LIB_DEPENDENCIES = [
     "@tanstack/charts@0.7.2",
     "@tanstack/charts-scales@0.7.2",
@@ -26,36 +26,36 @@ LIB_DEPENDENCIES = [
 
 SPEC_VERSION = 1
 
-try:  # pragma: no cover - depende del contexto de compilación
+try:  # pragma: no cover - depends on the compilation context
     _BRIDGE_PATH = rx.asset("TanStackChartBridge.jsx", shared=True)
-except Exception:  # fuera de una app (p. ej. tests aislados)
+except Exception:  # outside an app (e.g. isolated tests)
     _BRIDGE_PATH = "/external/reflex_tanstack_charts/TanStackChartBridge.jsx"
 
 
 class TanStackChart(rx.Component):
-    """Wrapper del bridge local que interpreta ChartSpec → defineChart (DD-001)."""
+    """Wrapper around the local bridge that interprets ChartSpec → defineChart (DD-001)."""
 
     library = f"$/public{_BRIDGE_PATH}"
     tag = "TanStackChartBridge"
 
     lib_dependencies: list[str] = LIB_DEPENDENCIES
 
-    #: ChartSpec v1 completo (Data Model §2.1).
+    #: Full ChartSpec v1 (Data Model §2.1).
     spec: rx.Var[dict[str, Any]]
-    #: Alto fijo en px (REQ-CH-016).
+    #: Fixed height in px (REQ-CH-016).
     height: rx.Var[int]
-    #: Alternativa responsive a height.
+    #: Responsive alternative to height.
     aspect_ratio: rx.Var[float]
-    #: Ancho inicial para SSR con aspect_ratio.
+    #: Initial width for SSR when using aspect_ratio.
     initial_width: rx.Var[int]
-    #: Etiqueta accesible del gráfico (REQ-CH-017).
+    #: Accessible label for the chart (REQ-CH-017).
     aria_label: rx.Var[str]
-    #: Variables CSS --ts-chart-* para theming (REQ-CH-018).
+    #: CSS variables --ts-chart-* for theming (REQ-CH-018).
     theme_vars: rx.Var[dict[str, str]]
 
-    #: REQ-CH-008/010 — punto enfocado (dict sanitizado) o None.
+    #: REQ-CH-008/010 — focused point (sanitized dict) or None.
     on_focus_change: rx.EventHandler[lambda point: [point]]
-    #: REQ-CH-009 — punto seleccionado (click/Enter).
+    #: REQ-CH-009 — selected point (click/Enter).
     on_select: rx.EventHandler[lambda point: [point]]
 
 
@@ -84,7 +84,7 @@ def build_chart_spec(
     tooltip: bool = False,
     animate: bool = False,
 ) -> dict[str, Any]:
-    """Construye el ChartSpec raíz v1 (Data Model §2.1)."""
+    """Build the root ChartSpec v1 (Data Model §2.1)."""
     return {
         "version": SPEC_VERSION,
         "marks": _validate_marks(marks),
@@ -113,9 +113,9 @@ def tanstack_chart(
     on_select: Any = None,
     **props: Any,
 ) -> rx.Component:
-    """Crea un gráfico TanStack Charts desde un ChartSpec declarativo.
+    """Create a TanStack Charts chart from a declarative ChartSpec.
 
-    Ejemplo mínimo::
+    Minimal example::
 
         tanstack_chart(
             marks=[bar_y(data, x="letter", y="frequency")],
@@ -135,7 +135,7 @@ def tanstack_chart(
     if height is None and aspect_ratio is None:
         height = 320
 
-    # REQ-CH-017: accesibilidad
+    # REQ-CH-017: accessibility
     if aria_label is None:
         warnings.warn(
             f"{_TAG} no aria_label provided; charts should have an accessible label",

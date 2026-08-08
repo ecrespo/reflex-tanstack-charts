@@ -1,6 +1,6 @@
-"""Constructor de ejes con formatos declarativos (DD-003).
+"""Axis builder with declarative formats (DD-003).
 
-REQ: REQ-CH-004 (config de ejes) — formatos vía Intl en el bridge, nunca funciones.
+REQ: REQ-CH-004 (axis config) — formats go through Intl in the bridge, never functions.
 Specs: specs/api/component-api-v1.md §2.3 · specs/data-model/chartspec-schema.md §2.3/2.5
 """
 
@@ -37,7 +37,7 @@ def axis(
     nice: bool | None = None,
     ticks: dict[str, Any] | None = None,
 ) -> AxisSpec:
-    """Construye un AxisSpec serializable (forma del Data Model §2.3)."""
+    """Build a serializable AxisSpec (shape from Data Model §2.3)."""
     if ticks is not None:
         unknown = set(ticks) - _TICKS_KEYS
         if unknown:

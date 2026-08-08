@@ -1,70 +1,70 @@
-# Delta Spec — Bridge sin adaptador React (DOM host vanilla)
+# Delta Spec — Bridge without the React adapter (vanilla DOM host)
 
-> Estado: `APPLIED` (2026-08-07) · Afecta a: Tech Design (DD-006), PRD REQ-CH-002 y
-> REQ-CH-020, bridge JSX, `LIB_DEPENDENCIES`. No cambia la API Python ni el
-> contrato ChartSpec v1.
+> Status: `APPLIED` (2026-08-07) · Affects: Tech Design (DD-006), PRD REQ-CH-002 and
+> REQ-CH-020, the JSX bridge, `LIB_DEPENDENCIES`. It does not change the Python API
+> nor the ChartSpec v1 contract.
 
-## Bug origen (reporte del usuario)
+## Originating bug (user report)
 
-`reflex run` (vite dev) lanzaba
-`TypeError: can't access property "useMemo", resolveDispatcher() is null` al
-montar `TanStackChartBridge`.
+`reflex run` (vite dev) raised
+`TypeError: can't access property "useMemo", resolveDispatcher() is null` when
+mounting `TanStackChartBridge`.
 
-**Causa raíz:** el bridge se sirve desde `/public/external/...` — Vite trata
-`public/` como assets estáticos y NO lo incluye en el escaneo de optimizeDeps.
-Sus dependencias se descubren en runtime → segunda pasada de optimización → dos
-copias pre-empaquetadas de React coexisten (hashes `?v=` distintos: `react.js
-?v=324d…` vs `react-dom_client.js?v=1b3d…`). Con dos copias, el dispatcher de
-hooks es `null`. El build de producción no lo sufre porque todo se empaqueta en
-un solo grafo — por eso el export SSR pasaba y el dev no.
+**Root cause:** the bridge is served from `/public/external/...` — Vite treats
+`public/` as static assets and does NOT include it in the optimizeDeps scan. Its
+dependencies are discovered at runtime → a second optimization pass → two
+pre-bundled copies of React coexist (different `?v=` hashes: `react.js?v=324d…`
+vs `react-dom_client.js?v=1b3d…`). With two copies, the hook dispatcher is `null`.
+The production build does not suffer from it because everything is bundled into a
+single graph — which is why the SSR export passed and dev did not.
 
-Reproducido de forma determinista en sandbox: bundle del bridge con su propia
-copia de React inlined + `react-dom` externo → crash idéntico; primero en el
-`useMemo` del bridge y, eliminado ese, **dentro de `<Chart>` de
-`@tanstack/react-charts`** (el adaptador también usa hooks). Quitar hooks solo
-del bridge era insuficiente.
+Reproduced deterministically in a sandbox: a bridge bundle with its own inlined
+copy of React + an external `react-dom` → identical crash; first in the bridge's
+`useMemo` and, once that was removed, **inside `<Chart>` from
+`@tanstack/react-charts`** (the adapter also uses hooks). Removing hooks only from
+the bridge was not enough.
 
-## Decisión (DD-006)
+## Decision (DD-006)
 
-El bridge abandona el adaptador React y monta con el **DOM host vanilla**
-(`mountChart` de `@tanstack/charts/dom`, framework-free, cero hooks) desde un
+The bridge drops the React adapter and mounts with the **vanilla DOM host**
+(`mountChart` from `@tanstack/charts/dom`, framework-free, zero hooks) from a
 **class component** (`componentDidMount`/`DidUpdate`/`WillUnmount` +
-`host.update()`/`destroy()`). Los class components y la creación de elementos
-funcionan entre copias de React; los hooks no → inmune por construcción.
+`host.update()`/`destroy()`). Class components and element creation work across
+React copies; hooks do not → immune by construction.
 
-- `useMemo` → `WeakMap` por identidad del spec (misma semántica, REQ-CH-005).
-- Error boundary → `try/catch` en el montaje + `setState` con placeholder
-  (REQ-CH-015 intacto).
-- `ChartHostOptions` cubre 1:1 lo que usaba `<Chart>`: `definition`, `height`,
+- `useMemo` → `WeakMap` keyed by spec identity (same semantics, REQ-CH-005).
+- Error boundary → `try/catch` on mount + `setState` with a placeholder
+  (REQ-CH-015 intact).
+- `ChartHostOptions` covers 1:1 what `<Chart>` used: `definition`, `height`,
   `aspectRatio`, `initialWidth`, `ariaLabel`, `onFocusChange`, `onSelect`.
 
-## Enmiendas
+## Amendments
 
-- **REQ-CH-002**: "…renderizar SVG con esa marca mediante `defineChart` +
-  `mountChart` (DOM host de `@tanstack/charts`)" (antes: `<Chart>` de
+- **REQ-CH-002**: "…render SVG with that mark through `defineChart` +
+  `mountChart` (DOM host of `@tanstack/charts`)" (previously: `<Chart>` from
   `@tanstack/react-charts`).
-- **REQ-CH-020**: pins quedan en `@tanstack/charts@0.7.2`,
+- **REQ-CH-020**: the pins become `@tanstack/charts@0.7.2`,
   `@tanstack/charts-scales@0.7.2`, `d3-scale@4.0.2`, `d3-shape@3.2.0` —
-  `@tanstack/react-charts` deja de ser dependencia.
+  `@tanstack/react-charts` is no longer a dependency.
 
-## Trade-off aceptado
+## Accepted trade-off
 
-El DOM host monta en cliente: el HTML prerenderizado ya no contiene los SVG
-(contiene los contenedores, que hidratan al cargar). Se pierde el SVG estático
-del prerender a cambio de dev servible desde `public/` sin riesgo de doble
-React. Revisitable si TanStack publica un adaptador sin hooks o Reflex expone
-`optimizeDeps` para assets.
+The DOM host mounts on the client: the prerendered HTML no longer contains the
+SVGs (it contains the containers, which hydrate on load). We lose the prerender's
+static SVG in exchange for a dev server that can serve from `public/` with no risk
+of double React. Revisitable if TanStack publishes a hook-free adapter or Reflex
+exposes `optimizeDeps` for assets.
 
-## Verificación
+## Verification
 
-- jsdom + **dos copias de React** (escenario del bug): 11/11 casos renderizan
-  SVG (incl. pie anidado, capas temporales, degradación, versión futura).
-- `pytest` 56/56 (pin actualizado por TDD) · `ruff` limpio.
-- Export producción: prerender verde, 52 contenedores en `index.html`, galería
-  completa presente.
+- jsdom + **two copies of React** (the bug scenario): 11/11 cases render SVG
+  (including nested pie, temporal layers, degradation, future version).
+- `pytest` 56/56 (pin updated through TDD) · `ruff` clean.
+- Production export: prerender green, 52 containers in `index.html`, complete
+  gallery present.
 
-## Nota operativa
+## Operational note
 
-Tras actualizar, **borrar la caché de Vite** para eliminar los grafos duplicados
-ya persistidos: `rm -rf tanstack_charts_demo/.web` (o al menos
-`.web/node_modules/.vite`) antes de `reflex run`.
+After updating, **clear the Vite cache** to remove the duplicated graphs that are
+already persisted: `rm -rf tanstack_charts_demo/.web` (or at least
+`.web/node_modules/.vite`) before `reflex run`.

@@ -1,7 +1,7 @@
-"""Tests de helpers de marcas.
+"""Tests for the mark helpers.
 
-REQs cubiertos: REQ-CH-003 (marcas núcleo), REQ-CH-011 (serialización de fechas,
-frontera JSON), REQ-CH-012 (fail-fast ante campo inexistente).
+REQs covered: REQ-CH-003 (core marks), REQ-CH-011 (date serialization,
+JSON boundary), REQ-CH-012 (fail-fast on a non-existent field).
 Specs: specs/prd/reflex-tanstack-charts.md · specs/api/component-api-v1.md §2.2
 """
 
@@ -19,7 +19,7 @@ from reflex_tanstack_charts import (
     text,
 )
 
-UTC = timezone.utc  # compat <3.11 (ver pyproject: ignore UP017)
+UTC = timezone.utc  # <3.11 compat (see pyproject: ignore UP017)
 
 DATA = [
     {"letter": "E", "frequency": 0.127},
@@ -92,17 +92,17 @@ def test_req_ch_003_pie_camel_cases_radii():
 
 def test_req_ch_012_unknown_field_raises():
     with pytest.raises(ValueError, match="UNKNOWN_FIELD"):
-        bar_y(DATA, x="letra", y="frequency")
+        bar_y(DATA, x="letters", y="frequency")
 
 
 def test_req_ch_012_unknown_optional_field_channel_raises():
     with pytest.raises(ValueError, match="UNKNOWN_FIELD"):
-        dot(DATA, x="letter", y="frequency", z="segmento")
+        dot(DATA, x="letter", y="frequency", z="segment")
 
 
 def test_req_ch_012_var_data_defers_validation():
     v = rx.Var.create([{"x": 1, "y": 2}])
-    m = bar_y(v, x="whatever", y="anything")  # no debe lanzar (validación diferida)
+    m = bar_y(v, x="whatever", y="anything")  # must not raise (deferred validation)
     assert m["options"]["x"] == "whatever"
 
 

@@ -1,20 +1,20 @@
 # reflex-tanstack-charts
 
-Componente personalizado de [Reflex](https://reflex.dev) que envuelve
-[TanStack Charts](https://tanstack.com/charts/latest): una gramática de gráficos
-tipada, componible por capas y accesible (SVG, foco por teclado, ~16 KiB gzip para
-una línea compacta). Declara gráficos 100 % en Python; sin JavaScript.
+Custom [Reflex](https://reflex.dev) component wrapping
+[TanStack Charts](https://tanstack.com/charts/latest): a typed, layer-composable
+and accessible chart grammar (SVG, keyboard focus, ~16 KiB gzip for a compact
+line chart). Declare charts 100% in Python; no JavaScript.
 
-> TanStack Charts está en **pre-alpha (0.7.2)**; las versiones npm van fijadas
-> (pinned) y los bumps entran por Delta Spec (ver `specs/`).
+> TanStack Charts is in **pre-alpha (0.7.2)**; the npm versions are pinned and
+> bumps go through a Delta Spec (see `specs/`).
 
-## Instalación
+## Installation
 
 ```bash
-uv add reflex-tanstack-charts        # o pip install reflex-tanstack-charts
+uv add reflex-tanstack-charts        # or pip install reflex-tanstack-charts
 ```
 
-## Ejemplo mínimo
+## Minimal example
 
 ```python
 import reflex as rx
@@ -32,21 +32,21 @@ def page() -> rx.Component:
     )
 ```
 
-## Marcas soportadas (contrato v1)
+## Supported marks (v1 contract)
 
-| Helper Python | Marca TanStack | Uso típico |
+| Python helper | TanStack mark | Typical use |
 |---|---|---|
-| `line_y` / `line_x` | `lineY` / `lineX` | tendencias, series temporales |
-| `area_y` / `area_x` | `areaY` / `areaX` | áreas y bandas (`y1`+`y2` / `x1`+`x2`) |
-| `bar_y` / `bar_x` | `barY` / `barX` | barras verticales / ranking horizontal |
-| `dot` | `dot` | scatter, burbujas (`r` numérico o campo) |
-| `rule_x` / `rule_y` | `ruleX` / `ruleY` | líneas de referencia y metas |
-| `tick_x` / `tick_y` | `tickX` / `tickY` | strip plots, rangos |
-| `cell` | `cell` | heatmaps ordinales |
-| `text` | `text` | anotaciones |
-| `pie` | `pie` (polar) | pie y donut (`inner_radius`) |
+| `line_y` / `line_x` | `lineY` / `lineX` | trends, time series |
+| `area_y` / `area_x` | `areaY` / `areaX` | areas and bands (`y1`+`y2` / `x1`+`x2`) |
+| `bar_y` / `bar_x` | `barY` / `barX` | vertical bars / horizontal ranking |
+| `dot` | `dot` | scatter, bubbles (`r` as a number or a field) |
+| `rule_x` / `rule_y` | `ruleX` / `ruleY` | reference lines and targets |
+| `tick_x` / `tick_y` | `tickX` / `tickY` | strip plots, ranges |
+| `cell` | `cell` | ordinal heatmaps |
+| `text` | `text` | annotations |
+| `pie` | `pie` (polar) | pie and donut (`inner_radius`) |
 
-Las marcas se componen por capas sobre escalas compartidas, igual que en TanStack:
+Marks compose in layers over shared scales, just like in TanStack:
 
 ```python
 tanstack_chart(
@@ -57,18 +57,18 @@ tanstack_chart(
         text(releases, x="week", y="rate", text="label", dy=-16),
     ],
     x=axis(scale=scale("utc"), ticks={"format": {"month": "short", "day": "numeric"}}),
-    y=axis(grid=True, label="Activación (%)"),
-    aria_label="Activación semanal",
+    y=axis(grid=True, label="Activation (%)"),
+    aria_label="Weekly activation",
 )
 ```
 
-## Escalas
+## Scales
 
-`linear`, `band`, `point`, `ordinal` (compactas de `@tanstack/charts-scales`) y
-`utc`, `time`, `log`, `sqrt` (vía `d3-scale`). Los `datetime`/`date` de Python se
-serializan a ISO-8601 y el bridge los rehidrata a `Date`.
+`linear`, `band`, `point`, `ordinal` (compact ones from `@tanstack/charts-scales`)
+and `utc`, `time`, `log`, `sqrt` (via `d3-scale`). Python `datetime`/`date` values
+are serialized to ISO-8601 and the bridge rehydrates them back to `Date`.
 
-## Eventos hacia Python
+## Events into Python
 
 ```python
 class S(rx.State):
@@ -79,10 +79,10 @@ class S(rx.State):
 tanstack_chart(..., on_focus_change=S.pick, on_select=S.pick)
 ```
 
-## Datos reactivos
+## Reactive data
 
-Pasa un `rx.Var` como dataset y el gráfico se re-renderiza al mutar el estado
-(con `animate=True`, con transición):
+Pass an `rx.Var` as the dataset and the chart re-renders when the state mutates
+(with `animate=True`, using a transition):
 
 ```python
 tanstack_chart(marks=[bar_y(State.data, x="cat", y="val")], animate=True, ...)
@@ -96,7 +96,7 @@ tanstack_chart(..., theme={"--ts-chart-grid": "#33415555"})
 
 ## Demo
 
-Galería con las 14 marcas, eventos, reactividad y degradación:
+Gallery with the 14 marks, events, reactivity and graceful degradation:
 
 ```bash
 uv sync
@@ -104,11 +104,11 @@ cd tanstack_charts_demo
 uv run reflex run
 ```
 
-## Desarrollo
+## Development
 
-Proyecto spec-anchored (SDD): las specs viven en `specs/` (constitución, PRD con
-criterios EARS, API spec, tech design, data model, plan, tasks y gate Analyze).
-Los tests citan los REQ que verifican.
+Spec-anchored project (SDD): the specs live in `specs/` (constitution, PRD with
+EARS criteria, API spec, tech design, data model, plan, tasks and the Analyze
+gate). Tests cite the REQs they verify.
 
 ```bash
 uv sync
@@ -116,6 +116,6 @@ uv run pytest
 uv run ruff check custom_components tests
 ```
 
-## Licencia
+## License
 
 MIT © Ernesto Crespo

@@ -2,32 +2,32 @@
 
 ## Metadata
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| **Autor** | Ernesto Crespo |
-| **Estado** | `DRAFT` |
-| **Versión** | 1.0 (`ChartSpec.version = 1`) |
-| **Fecha** | 2026-08-07 |
-| **Base de Datos** | N/A — contrato JSON en memoria (prop de componente) |
-| **Tech Design Relacionado** | `specs/technical/architecture.md` |
+| **Author** | Ernesto Crespo |
+| **Status** | `DRAFT` |
+| **Version** | 1.0 (`ChartSpec.version = 1`) |
+| **Date** | 2026-08-07 |
+| **Database** | N/A — in-memory JSON contract (component prop) |
+| **Related Tech Design** | `specs/technical/architecture.md` |
 
-> Nota de adaptación: este proyecto no persiste datos. El "modelo de datos" es el
-> **schema del `ChartSpec`**, el objeto JSON que cruza la frontera Python→JS. Es el
-> contrato más crítico del sistema: todo campo del API Spec debe existir aquí.
+> Adaptation note: this project does not persist data. The "data model" is the
+> **`ChartSpec` schema**, the JSON object that crosses the Python→JS boundary. It is
+> the most critical contract in the system: every API Spec field must exist here.
 
 ---
 
-## 1. Visión General del Modelo
+## 1. Model Overview
 
-Entidades: `ChartSpec` (raíz) → `MarkSpec[]` (cada una con dataset embebido,
+Entities: `ChartSpec` (root) → `MarkSpec[]` (each with an embedded dataset,
 mark-local data, DD-004) + `AxisSpec` (x, y) → `ScaleSpec` + `TicksSpec` +
-`FormatSpec`. Del lado de eventos: `PointPayload` (bridge → Reflex).
+`FormatSpec`. On the event side: `PointPayload` (bridge → Reflex).
 
-### Diagrama de Relaciones
+### Relationship Diagram
 
 ```
 ┌───────────┐ 1:N ┌───────────┐        ┌────────────┐
-│ ChartSpec │────▶│  MarkSpec │        │PointPayload│  (evento, JS→Python)
+│ ChartSpec │────▶│  MarkSpec │        │PointPayload│  (event, JS→Python)
 └─────┬─────┘     │  .data[]  │        └────────────┘
       │ 1:2       └───────────┘
 ┌─────▼─────┐ 1:1 ┌───────────┐ 1:1 ┌────────────┐
@@ -38,7 +38,7 @@ mark-local data, DD-004) + `AxisSpec` (x, y) → `ScaleSpec` + `TicksSpec` +
 
 ## 2. Schemas
 
-### 2.1 `ChartSpec` (raíz)
+### 2.1 `ChartSpec` (root)
 
 ```json
 {
@@ -52,12 +52,12 @@ mark-local data, DD-004) + `AxisSpec` (x, y) → `ScaleSpec` + `TicksSpec` +
 }
 ```
 
-| Campo | Tipo | Requerido | Default | Descripción |
+| Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `version` | int | Sí | `1` | Versión del contrato; bridge rechaza > soportada |
-| `marks` | `MarkSpec[]` | Sí (≥1) | — | REQ-CH-003 |
-| `x`, `y` | `AxisSpec\|null` | No | `null` (inferencia TanStack) | REQ-CH-004 |
-| `color` | `ColorSpec\|null` | No | `null` | escala de color/serie |
+| `version` | int | Yes | `1` | Contract version; the bridge rejects anything > supported |
+| `marks` | `MarkSpec[]` | Yes (≥1) | — | REQ-CH-003 |
+| `x`, `y` | `AxisSpec\|null` | No | `null` (TanStack inference) | REQ-CH-004 |
+| `color` | `ColorSpec\|null` | No | `null` | color/series scale |
 | `tooltip` | bool | No | `false` | REQ-CH-006 |
 | `animate` | bool | No | `false` | REQ-CH-007 |
 
@@ -72,18 +72,18 @@ mark-local data, DD-004) + `AxisSpec` (x, y) → `ScaleSpec` + `TicksSpec` +
 }
 ```
 
-| Campo | Tipo | Requerido | Descripción |
+| Field | Type | Required | Description |
 |---|---|---|---|
-| `type` | string enum | Sí | Uno de: `lineY`, `lineX`, `areaY`, `areaX`, `barY`, `barX`, `dot`, `ruleX`, `ruleY`, `text`, `tickX`, `tickY`, `cell`, `pie` (nombres TanStack exactos, Art. 3) |
-| `data` | `object[]` \| `number[]` | Sí | Registros homogéneos; `number[]` solo para `ruleX`/`ruleY` (valores de referencia) |
-| `temporal_fields` | `string[]` | Sí (puede ser `[]`) | Campos a rehidratar `new Date(iso)` en el bridge (REQ-CH-011) |
-| `options` | object | Sí | Canales y estilos serializables por marca (catálogo en API Spec §2.2); claves en camelCase JS (`strokeWidth`), convertidas desde snake_case por el helper |
+| `type` | string enum | Yes | One of: `lineY`, `lineX`, `areaY`, `areaX`, `barY`, `barX`, `dot`, `ruleX`, `ruleY`, `text`, `tickX`, `tickY`, `cell`, `pie` (exact TanStack names, Art. 3) |
+| `data` | `object[]` \| `number[]` | Yes | Homogeneous records; `number[]` only for `ruleX`/`ruleY` (reference values) |
+| `temporal_fields` | `string[]` | Yes (may be `[]`) | Fields to rehydrate with `new Date(iso)` in the bridge (REQ-CH-011) |
+| `options` | object | Yes | Serializable per-mark channels and styles (catalog in API Spec §2.2); keys in JS camelCase (`strokeWidth`), converted from snake_case by the helper |
 
-**Invariantes de `options` (validadas en Python, REQ-CH-012):**
-- Todo canal que nombre un campo (`x`, `y`, `y1`, `y2`, `z`, `color`, `r` si string, `text`, `value`, `label`, `key`) debe existir en `data[0]`.
-- `fill` y `stroke` **no** son canales: en TanStack 0.7.2 son colores CSS literales. Para colorear por datos se usa `color` (o `z`) con la escala de `ColorSpec`.
+**`options` invariants (validated in Python, REQ-CH-012):**
+- Every channel naming a field (`x`, `y`, `y1`, `y2`, `z`, `color`, `r` if a string, `text`, `value`, `label`, `key`) must exist in `data[0]`.
+- `fill` and `stroke` are **not** channels: in TanStack 0.7.2 they are literal CSS colors. To color by data, use `color` (or `z`) with the `ColorSpec` scale.
 - `curve` ∈ `{"linear","monotone-x","natural","step","step-after","step-before","basis","catmull-rom"}`.
-- `id` string opcional; recomendado para trazar eventos (`PointPayload.mark_id`).
+- `id` optional string; recommended for tracing events (`PointPayload.mark_id`).
 
 ### 2.3 `AxisSpec`
 
@@ -101,28 +101,28 @@ mark-local data, DD-004) + `AxisSpec` (x, y) → `ScaleSpec` + `TicksSpec` +
 
 ### 2.4 `ScaleSpec`
 
-| Campo | Tipo | Aplica a | Notas |
+| Field | Type | Applies to | Notes |
 |---|---|---|---|
-| `type` | enum `linear\|band\|point\|ordinal\|utc\|time\|log\|sqrt` | todas | REQ-CH-004 |
-| `domain` | `[number,number]` \| `string[]` \| `[iso,iso]` | opc. | ISO-8601 si `utc`/`time` (se rehidrata) |
-| `nice` | bool | continuas | — |
-| `padding` | float 0..1 | `band`/`point` | default TanStack 0 / band 0.18 recomendado |
-| `range` | `string[]` (colores) | `ordinal` en `color` | — |
+| `type` | enum `linear\|band\|point\|ordinal\|utc\|time\|log\|sqrt` | all | REQ-CH-004 |
+| `domain` | `[number,number]` \| `string[]` \| `[iso,iso]` | opt. | ISO-8601 if `utc`/`time` (rehydrated) |
+| `nice` | bool | continuous | — |
+| `padding` | float 0..1 | `band`/`point` | TanStack default 0 / band 0.18 recommended |
+| `range` | `string[]` (colors) | `ordinal` in `color` | — |
 | `base` | number | `log` | default 10 |
 
-### 2.5 `FormatSpec` (ticks declarativos, DD-003)
+### 2.5 `FormatSpec` (declarative ticks, DD-003)
 
-Números → `Intl.NumberFormat`:
+Numbers → `Intl.NumberFormat`:
 
-| Campo | Valores |
+| Field | Values |
 |---|---|
 | `style` | `"decimal" \| "percent" \| "currency" \| "compact"` (`compact` = decimal + `notation:"compact"`) |
-| `currency` | ISO 4217, requerido si `style="currency"` |
+| `currency` | ISO 4217, required if `style="currency"` |
 | `maximum_fraction_digits`, `minimum_fraction_digits` | int 0..20 |
 | `locale` | BCP-47, default `"en-US"` |
 
-Fechas (campo temporal) → `Intl.DateTimeFormat`: `locale`, `date_style` o
-combinación `year/month/day/hour/minute` (valores estándar Intl), `time_zone`
+Dates (temporal field) → `Intl.DateTimeFormat`: `locale`, `date_style` or a
+`year/month/day/hour/minute` combination (standard Intl values), `time_zone`
 (default `"UTC"`).
 
 ### 2.6 `ColorSpec`
@@ -131,61 +131,61 @@ combinación `year/month/day/hour/minute` (valores estándar Intl), `time_zone`
 { "scale": { "type": "ordinal", "domain": ["SMB", "Growth"], "range": ["#0ea5e9", "#f97316"] } }
 ```
 
-*(Campo `legend` retirado del contrato v1 — Analyze A-06; re-añadible de forma aditiva.)*
+*(The `legend` field was removed from the v1 contract — Analyze A-06; it can be re-added additively.)*
 
-### 2.7 `PointPayload` (evento JS → Python; API Spec §5)
+### 2.7 `PointPayload` (JS → Python event; API Spec §5)
 
-| Campo | Tipo | Nullable | Descripción |
+| Field | Type | Nullable | Description |
 |---|---|---|---|
-| `mark_id` | string | Sí | `options.id` de la marca origen |
-| `key` | string \| number | Sí | key estable del punto |
-| `x_value` | number \| string | Sí | ISO-8601 si temporal |
-| `y_value` | number \| string | Sí | — |
-| `datum` | object plano | Sí | registro original sanitizado (Date→ISO, undefined→null, no-planos eliminados) |
+| `mark_id` | string | Yes | `options.id` of the originating mark |
+| `key` | string \| number | Yes | stable key of the point |
+| `x_value` | number \| string | Yes | ISO-8601 if temporal |
+| `y_value` | number \| string | Yes | — |
+| `datum` | plain object | Yes | sanitized original record (Date→ISO, undefined→null, non-plain values removed) |
 
-Payload completo `null` cuando el foco se pierde (REQ-CH-010).
+The whole payload is `null` when focus is lost (REQ-CH-010).
 
-## 3. Reglas de Serialización (Python → JSON)
+## 3. Serialization Rules (Python → JSON)
 
-| Tipo Python | JSON | Regla |
+| Python type | JSON | Rule |
 |---|---|---|
-| `datetime` / `date` | string ISO-8601 (UTC si naive → se asume UTC y se documenta) | campo se añade a `temporal_fields` |
-| `Decimal` | number (float) | pérdida de precisión aceptada: son coordenadas visuales, no dinero persistido — excepción justificada al patrón "dinero en Decimal" del checklist |
-| `int`, `float` | number | `NaN`/`inf` → `ValueError` (no serializables) |
-| `None` | null | canal ausente ≠ null: los helpers omiten claves None |
-| snake_case (Python) | camelCase (JS) en `options` | conversión en el helper, tabla fija |
+| `datetime` / `date` | ISO-8601 string (UTC if naive → UTC is assumed and documented) | the field is added to `temporal_fields` |
+| `Decimal` | number (float) | accepted precision loss: these are visual coordinates, not persisted money — a justified exception to the checklist's "money in Decimal" pattern |
+| `int`, `float` | number | `NaN`/`inf` → `ValueError` (not serializable) |
+| `None` | null | an absent channel ≠ null: the helpers omit None keys |
+| snake_case (Python) | camelCase (JS) in `options` | conversion in the helper, fixed table |
 
-## 4. Queries Críticas → Accesos críticos del bridge
+## 4. Critical Queries → Critical bridge accesses
 
-(Adaptación: no hay DB; estos son los caminos calientes del intérprete.)
+(Adaptation: there is no DB; these are the interpreter's hot paths.)
 
-| Acceso | Estructura | Target |
+| Access | Structure | Target |
 |---|---|---|
-| `MARK_REGISTRY[type]` | objeto plano JS | O(1) |
-| Rehidratación temporal | recorre `data` × `temporal_fields` | O(n·t), solo si `temporal_fields ≠ []` |
-| `useMemo` del definition | identidad del prop `spec` | recompute solo al cambiar estado |
+| `MARK_REGISTRY[type]` | plain JS object | O(1) |
+| Temporal rehydration | walks `data` × `temporal_fields` | O(n·t), only if `temporal_fields ≠ []` |
+| `useMemo` of the definition | identity of the `spec` prop | recomputes only when the state changes |
 
-## 5. Migración de Datos
+## 5. Data Migration
 
-Sin datos persistidos. Migración = evolución del contrato:
-- Cambios aditivos (campo opcional nuevo) → misma `version`.
-- Cambios incompatibles → `version + 1`; el bridge mantiene el intérprete de la versión anterior durante ≥1 minor del paquete.
-- Snapshots de `tests/test_spec_contract.py` son el mecanismo de detección de ruptura accidental.
+No persisted data. Migration = contract evolution:
+- Additive changes (a new optional field) → same `version`.
+- Incompatible changes → `version + 1`; the bridge keeps the previous version's interpreter for ≥1 package minor.
+- The snapshots in `tests/test_spec_contract.py` are the mechanism for detecting accidental breakage.
 
-## 6. Estrategias de Archivado / 7. Backup
-N/A (sin persistencia).
+## 6. Archiving Strategies / 7. Backup
+N/A (no persistence).
 
 ---
 
 ## Constitution check
-- Art. 2 (frontera serializable): todo el schema es JSON puro; fechas ISO-8601. ✓
-- Excepción justificada al patrón "dinero en Decimal" del checklist Analyze: `Decimal`→float
-  es aceptable porque los valores son coordenadas visuales, no montos persistidos ni
-  transaccionales (Analyze A-08). ✓
+- Art. 2 (serializable boundary): the whole schema is pure JSON; dates in ISO-8601. ✓
+- Justified exception to the Analyze checklist's "money in Decimal" pattern: `Decimal`→float
+  is acceptable because the values are visual coordinates, not persisted or transactional
+  amounts (Analyze A-08). ✓
 
-## Historial de Cambios
+## Change History
 
-| Versión | Fecha | Autor | Cambios |
+| Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.0 | 2026-08-07 | Ernesto Crespo | Versión inicial |
-| 1.1 | 2026-08-07 | Ernesto Crespo | A-06: retirado `ColorSpec.legend`; A-08: constitution check |
+| 1.0 | 2026-08-07 | Ernesto Crespo | Initial version |
+| 1.1 | 2026-08-07 | Ernesto Crespo | A-06: removed `ColorSpec.legend`; A-08: constitution check |

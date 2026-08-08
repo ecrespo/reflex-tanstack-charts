@@ -1,6 +1,6 @@
 """reflex-tanstack-charts — Reflex custom component wrapping TanStack Charts.
 
-API pública (API Spec §1): componente, 14 marcas, escalas y ejes.
+Public API (API Spec §1): component, 14 marks, scales and axes.
 """
 
 from .axis import axis

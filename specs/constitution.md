@@ -1,82 +1,83 @@
-# Constitución — reflex-tanstack-charts
+# Constitution — reflex-tanstack-charts
 
-> Versión 1.0 · Ratificada: 2026-08-07 · Última enmienda: 2026-08-07
-> Ámbito: repositorio `reflex-tanstack-charts` (componente personalizado de Reflex que envuelve TanStack Charts)
+> Version 1.0 · Ratified: 2026-08-07 · Last amendment: 2026-08-07
+> Scope: repository `reflex-tanstack-charts` (Reflex custom component wrapping TanStack Charts)
 
-## Artículos
+## Articles
 
-### Art. 1 — Gestión de dependencias Python
-EL EQUIPO DEBERÁ usar `uv` como único gestor de paquetes y entornos (instalación,
-lock, build y publish con `uv build` / `uv publish`); ningún `pip install` ni
-`poetry` en scripts, CI o documentación.
-*Racional: un solo gestor reproducible; el usuario del repo estandarizó uv.*
+### Art. 1 — Python dependency management
+THE TEAM SHALL use `uv` as the single package and environment manager (install,
+lock, build and publish with `uv build` / `uv publish`); no `pip install` or
+`poetry` in scripts, CI or documentation.
+*Rationale: a single reproducible manager; the repo owner standardized on uv.*
 
-### Art. 2 — Frontera serializable
-EL SISTEMA DEBERÁ aceptar en su API Python únicamente valores serializables a JSON
-(el `ChartSpec`); ninguna API pública aceptará strings de JavaScript arbitrario para
-inyectar en el frontend. Fechas viajan como ISO-8601 y se rehidratan a `Date` en el
-bridge JS.
-*Racional: evita XSS/inyección y mantiene el contrato Python↔JS verificable.*
+### Art. 2 — Serializable boundary
+THE SYSTEM SHALL accept in its Python API only JSON-serializable values (the
+`ChartSpec`); no public API shall accept arbitrary JavaScript strings to inject
+into the frontend. Dates travel as ISO-8601 and are rehydrated to `Date` in the
+JS bridge.
+*Rationale: prevents XSS/injection and keeps the Python↔JS contract verifiable.*
 
-### Art. 3 — Paridad de vocabulario con TanStack
-EL SISTEMA DEBERÁ conservar los nombres de la gramática de TanStack Charts
-(`lineY`, `barY`, `dot`, `ruleY`, canales `x/y/z/fill/stroke`…) traducidos solo a
-snake_case en Python (`line_y`, `bar_y`); ningún renombre semántico propio.
-*Racional: la documentación upstream sigue siendo válida para el usuario; menos deriva terminológica.*
+### Art. 3 — Vocabulary parity with TanStack
+THE SYSTEM SHALL preserve the names of the TanStack Charts grammar (`lineY`,
+`barY`, `dot`, `ruleY`, channels `x/y/z/fill/stroke`…) translated only to
+snake_case in Python (`line_y`, `bar_y`); no custom semantic renaming.
+*Rationale: upstream documentation stays valid for the user; less terminology drift.*
 
-### Art. 4 — Dependencias npm fijadas
-EL SISTEMA DEBERÁ declarar `@tanstack/charts`, `@tanstack/charts-scales` y
-`@tanstack/react-charts` con versión exacta (pinned) en `lib_dependencies`, y todo
-bump de versión upstream DEBERÁ entrar vía Delta Spec con la matriz de marcas re-verificada.
-*Racional: TanStack Charts es pre-alpha (0.7.x); su API puede romper entre releases.*
+### Art. 4 — Pinned npm dependencies
+THE SYSTEM SHALL declare `@tanstack/charts`, `@tanstack/charts-scales` and
+`@tanstack/react-charts` with an exact (pinned) version in `lib_dependencies`, and
+every upstream version bump SHALL go through a Delta Spec with the mark matrix re-verified.
+*Rationale: TanStack Charts is pre-alpha (0.7.x); its API may break between releases.*
 
-### Art. 5 — Calidad de código
-EL EQUIPO DEBERÁ mantener `ruff check` + `ruff format --check` + `ty check` (o
-`pyright`) en verde antes de cada merge; el bridge JSX pasa por `prettier --check`.
-*Racional: gate automático barato; el repo es una librería pública.*
+### Art. 5 — Code quality
+THE TEAM SHALL keep `ruff check` + `ruff format --check` + `ty check` (or
+`pyright`) green before every merge; the JSX bridge goes through `prettier --check`.
+*Rationale: cheap automated gate; the repo is a public library.*
 
-### Art. 6 — Trazabilidad de requisitos
-EL SISTEMA DEBERÁ cubrir todo requisito MUST (REQ-CH-NNN) con ≥1 tarea en
-`specs/tasks/` y ≥1 test automatizado que cite el REQ en su nombre o docstring antes
-de cerrar la tarea.
-*Racional: columna vertebral del SDD; sin esto la spec es teatro.*
+### Art. 6 — Requirement traceability
+THE SYSTEM SHALL cover every MUST requirement (REQ-CH-NNN) with ≥1 task in
+`specs/tasks/` and ≥1 automated test citing the REQ in its name or docstring before
+closing the task.
+*Rationale: the backbone of SDD; without this the spec is theater.*
 
-### Art. 7 — Degradación sin ruptura
-EL SISTEMA DEBERÁ degradar con mensaje visible y `console.warn` — nunca con una
-excepción no capturada que rompa la página — ante specs inválidos, marcas no
-soportadas o datasets vacíos.
-*Racional: un chart roto no puede tumbar la app Reflex del usuario.*
+### Art. 7 — Degradation without breakage
+THE SYSTEM SHALL degrade with a visible message and `console.warn` — never with an
+uncaught exception that breaks the page — on invalid specs, unsupported marks or
+empty datasets.
+*Rationale: a broken chart must not take down the user's Reflex app.*
 
-### Art. 8 — Proceso spec-anchored
-EL EQUIPO DEBERÁ obtener spec aprobada antes de implementar trabajo ≥ feature media;
-cambios a features ya spec-adas entran por `changes/` como Delta Spec y se pliegan a
-`specs/` al aprobarse. Actualizar la spec es parte del Definition of Done.
-*Racional: las specs de `specs/` son la verdad actual del proyecto.*
+### Art. 8 — Spec-anchored process
+THE TEAM SHALL obtain an approved spec before implementing work ≥ medium feature;
+changes to already-specced features come in through `changes/` as a Delta Spec and
+are folded into `specs/` once approved. Updating the spec is part of the Definition of Done.
+*Rationale: the specs in `specs/` are the project's current truth.*
 
-## Restricciones del stack
+## Stack constraints
 
-Decidido, no se rediscute por feature:
+Decided, not re-discussed per feature:
 
-| Área | Decisión |
+| Area | Decision |
 |---|---|
-| Lenguaje backend | Python ≥ 3.12 (`.python-version` del repo) |
+| Backend language | Python ≥ 3.12 (repo `.python-version`) |
 | Framework | Reflex ≥ 0.8 (custom component, `reflex component init/build`) |
-| Gestor Python | uv (Art. 1) |
-| Librería de charts | TanStack Charts 0.7.2 (pre-alpha) + `@tanstack/react-charts` |
-| Escalas compactas | `@tanstack/charts-scales` (linear, band, point, ordinal) |
-| Escalas avanzadas | `d3-scale` solo para `utc`, `time`, `log`, `sqrt` |
-| Bridge frontend | Un único `TanStackChartBridge.jsx` local vía `rx.asset(shared=True)` + `$/public` |
-| Licencia | MIT (enmienda 2026-08-07: el repo ya tenía LICENSE MIT del autor; prevalece sobre el default Apache-2.0 de Reflex) |
-| Nombre del paquete | `reflex-tanstack-charts` (prefijo `reflex-` obligatorio para búsqueda en PyPI) |
-| Tests | pytest (unidad y compilación de componente); validación JS por build de la demo app |
+| Python manager | uv (Art. 1) |
+| Chart library | TanStack Charts 0.7.2 (pre-alpha) + `@tanstack/react-charts` |
+| Compact scales | `@tanstack/charts-scales` (linear, band, point, ordinal) |
+| Advanced scales | `d3-scale` only for `utc`, `time`, `log`, `sqrt` |
+| Frontend bridge | A single local `TanStackChartBridge.jsx` via `rx.asset(shared=True)` + `$/public` |
+| License | MIT (amendment 2026-08-07: the repo already had the author's MIT LICENSE; it prevails over Reflex's Apache-2.0 default) |
+| Package name | `reflex-tanstack-charts` (the `reflex-` prefix is mandatory for PyPI discoverability) |
+| Tests | pytest (unit and component compilation); JS validation through the demo app build |
 
-## Enmiendas
+## Amendments
 
-| Fecha | Artículo | Cambio | Razón | Aprobado por |
+| Date | Article | Change | Reason | Approved by |
 |---|---|---|---|---|
-| 2026-08-07 | Stack (licencia) | Apache-2.0 → MIT | LICENSE MIT preexistente del autor en el repo | Ernesto |
+| 2026-08-07 | Stack (license) | Apache-2.0 → MIT | Author's pre-existing MIT LICENSE in the repo | Ernesto |
 
-## Constitution check (usar en cada artefacto)
+## Constitution check (use in every artifact)
 
-Al final de cada PRD / Tech Design / Plan: qué artículos aplican y cómo se cumplen,
-o qué excepción se pide y por qué. Excepción sin justificación escrita = violación.
+At the end of each PRD / Tech Design / Plan: which articles apply and how they are
+met, or which exception is requested and why. An exception without a written
+justification = a violation.

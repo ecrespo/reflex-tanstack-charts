@@ -1,8 +1,8 @@
-"""Constructor de escalas — catálogo cerrado por nombre.
+"""Scale builder — catalog closed by name.
 
 REQ: REQ-CH-004. Specs: specs/api/component-api-v1.md §2.3 ·
 specs/data-model/chartspec-schema.md §2.4.
-El bridge resuelve: compactas (`@tanstack/charts-scales`) y avanzadas (`d3-scale`).
+The bridge resolves them: compact (`@tanstack/charts-scales`) and advanced (`d3-scale`).
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from typing import Any
 
 _TAG = "[reflex-tanstack-charts]"
 
-#: tipo → opciones permitidas
+#: type → allowed options
 SCALE_TYPES: dict[str, set[str]] = {
     "linear": {"domain", "nice"},
     "band": {"domain", "padding"},
@@ -38,7 +38,7 @@ def _serialize_domain(domain: list[Any]) -> list[Any]:
 
 
 def scale(
-    type: str,  # noqa: A002 - paridad con el contrato JSON
+    type: str,  # noqa: A002 - parity with the JSON contract
     *,
     domain: list[Any] | None = None,
     nice: bool | None = None,
@@ -46,7 +46,7 @@ def scale(
     range: list[str] | None = None,  # noqa: A002
     base: float | None = None,
 ) -> ScaleSpec:
-    """Construye un ScaleSpec serializable. Lanza ValueError ante tipo desconocido."""
+    """Build a serializable ScaleSpec. Raises ValueError on an unknown type."""
     if type not in SCALE_TYPES:
         raise ValueError(
             f"{_TAG} UNKNOWN_SCALE: {type!r}; valid scale types: {sorted(SCALE_TYPES)}"

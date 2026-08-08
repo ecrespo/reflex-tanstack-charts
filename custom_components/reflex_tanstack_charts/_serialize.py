@@ -1,7 +1,7 @@
-"""Serialización Python → JSON del ChartSpec.
+"""Python → JSON serialization of the ChartSpec.
 
-Implementa REQ-CH-011: fechas a ISO-8601 + `temporal_fields`; rechazo de NaN/Inf;
-frontera exclusivamente JSON-serializable (Constitución Art. 2).
+Implements REQ-CH-011: dates to ISO-8601 + `temporal_fields`; NaN/Inf rejection;
+strictly JSON-serializable boundary (Constitution Art. 2).
 Spec: specs/data-model/chartspec-schema.md §3
 """
 
@@ -15,7 +15,7 @@ _TAG = "[reflex-tanstack-charts]"
 
 
 def _serialize_value(field: str, value: Any, temporal: set[str]) -> Any:
-    """Serializa un valor escalar de un registro. Lanza ValueError si no es JSON-safe."""
+    """Serialize a scalar value of a record. Raises ValueError if it is not JSON-safe."""
     if isinstance(value, datetime):
         temporal.add(field)
         return value.isoformat()
@@ -38,9 +38,9 @@ def _serialize_value(field: str, value: Any, temporal: set[str]) -> Any:
 
 
 def serialize_dataset(data: list[Any]) -> tuple[list[Any], list[str]]:
-    """Serializa un dataset (list[dict] homogéneo o list[num] para rules).
+    """Serialize a dataset (homogeneous list[dict], or list[num] for rules).
 
-    Retorna (data_serializada, temporal_fields). No muta el original.
+    Returns (serialized_data, temporal_fields). Does not mutate the original.
     """
     temporal: set[str] = set()
     if not data:

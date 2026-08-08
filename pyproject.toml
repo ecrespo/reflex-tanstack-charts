@@ -40,8 +40,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "W"]
-# UP017 (datetime.UTC) ignorado: los tests deben poder ejecutarse también en
-# intérpretes <3.11 de entornos de CI restringidos; timezone.utc es equivalente.
+# UP017 (datetime.UTC) ignored: the tests must also be able to run on <3.11
+# interpreters in restricted CI environments; timezone.utc is equivalent.
 ignore = ["UP017"]
 
 [tool.pytest.ini_options]
