@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.idea/
+
+# Reflex — artefactos locales de ejecución/compilación de la demo
+.web/
+.states/
+reflex.lock/
+assets/external/
+frontend.zip
+backend.zip
+
+# Notas de otro proyecto que quedaron en el working tree; no pertenecen a este repo
+analisis-radio-garden.md
+factibilidad-radio-vintage-reflex.md
+factibilidad-radio-3d-botones-threejs.md
