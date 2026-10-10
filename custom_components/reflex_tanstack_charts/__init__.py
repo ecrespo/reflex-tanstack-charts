@@ -30,7 +30,7 @@ from .marks import (
 )
 from .scales import SCALE_TYPES, scale
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "CURVES",

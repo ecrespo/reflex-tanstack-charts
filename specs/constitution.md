@@ -25,10 +25,12 @@ snake_case in Python (`line_y`, `bar_y`); no custom semantic renaming.
 *Rationale: upstream documentation stays valid for the user; less terminology drift.*
 
 ### Art. 4 — Pinned npm dependencies
-THE SYSTEM SHALL declare `@tanstack/charts`, `@tanstack/charts-scales` and
-`@tanstack/react-charts` with an exact (pinned) version in `lib_dependencies`, and
-every upstream version bump SHALL go through a Delta Spec with the mark matrix re-verified.
-*Rationale: TanStack Charts is pre-alpha (0.7.x); its API may break between releases.*
+THE SYSTEM SHALL declare `@tanstack/charts` (and the D3 modules the bridge imports
+directly) with an exact (pinned) version in `lib_dependencies`, and every upstream
+version bump SHALL go through a Delta Spec with the mark matrix re-verified.
+*Rationale: TanStack Charts 0.x broke its API between minors; 1.x promises
+compatibility, but the bridge depends on details (defaults, option names) worth
+re-verifying on every bump.*
 
 ### Art. 5 — Code quality
 THE TEAM SHALL keep `ruff check` + `ruff format --check` + `ty check` (or
@@ -62,8 +64,8 @@ Decided, not re-discussed per feature:
 | Backend language | Python ≥ 3.12 (repo `.python-version`) |
 | Framework | Reflex ≥ 0.8 (custom component, `reflex component init/build`) |
 | Python manager | uv (Art. 1) |
-| Chart library | TanStack Charts 0.7.2 (pre-alpha) + `@tanstack/react-charts` |
-| Compact scales | `@tanstack/charts-scales` (linear, band, point, ordinal) |
+| Chart library | TanStack Charts 1.1.0 (`@tanstack/charts`, vanilla DOM host — DD-006) |
+| Compact scales | `@tanstack/charts/scales/*` (linear, band, point, ordinal) |
 | Advanced scales | `d3-scale` only for `utc`, `time`, `log`, `sqrt` |
 | Frontend bridge | A single local `TanStackChartBridge.jsx` via `rx.asset(shared=True)` + `$/public` |
 | License | MIT (amendment 2026-08-07: the repo already had the author's MIT LICENSE; it prevails over Reflex's Apache-2.0 default) |

@@ -102,10 +102,10 @@ every channel naming a field exists in the first record (REQ-CH-012); `datetime`
 
 | `type` | JS origin | Serializable options |
 |---|---|---|
-| `linear` | `@tanstack/charts-scales/linear` | `domain: [min, max]`, `nice: bool` |
-| `band` | `@tanstack/charts-scales/band` | `padding: float`, `domain: list` |
-| `point` | `@tanstack/charts-scales/point` | `padding`, `domain` |
-| `ordinal` | `@tanstack/charts-scales/ordinal` | `domain`, `range` (colors) |
+| `linear` | `@tanstack/charts/scales/linear` | `domain: [min, max]`, `nice: bool` |
+| `band` | `@tanstack/charts/scales/band` | `padding: float`, `domain: list` |
+| `point` | `@tanstack/charts/scales/point` | `padding`, `domain` |
+| `ordinal` | `@tanstack/charts/scales/ordinal` | `domain`, `range` (colors) |
 | `utc` | `d3-scale scaleUtc` | `domain: [iso, iso]`, `nice` |
 | `time` | `d3-scale scaleTime` | same as `utc` |
 | `log` | `d3-scale scaleLog` | `base`, `domain`, `nice` |

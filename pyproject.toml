@@ -1,6 +1,6 @@
 [project]
 name = "reflex-tanstack-charts"
-version = "0.1.0"
+version = "0.2.0"
 description = "Reflex custom component wrapping TanStack Charts (typed, tree-shakable SVG chart grammar)"
 readme = "README.md"
 license = { text = "MIT" }

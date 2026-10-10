@@ -15,7 +15,7 @@
 // graph; its "react" imports may resolve to a pre-bundled copy different from the
 // one react-dom uses (different ?v= hashes). With two copies, the hook dispatcher
 // is null → "resolveDispatcher() is null" in useMemo — both in this file and
-// INSIDE <Chart> from @tanstack/react-charts. That is why the bridge mounts with
+// INSIDE <Chart> from @tanstack/charts/react. That is why the bridge mounts with
 // the vanilla DOM host of @tanstack/charts (framework-free, no hooks at all) from
 // a class component: classes and element creation work across React copies; hooks
 // do not. Memoization by spec identity via WeakMap (REQ-CH-005).
@@ -40,10 +40,10 @@ import {
 import { pie, polar, radialArc } from "@tanstack/charts/polar"
 import { tooltip } from "@tanstack/charts/tooltip"
 import { mountChart } from "@tanstack/charts/dom"
-import { scaleBand } from "@tanstack/charts-scales/band"
-import { scaleLinear } from "@tanstack/charts-scales/linear"
-import { scaleOrdinal } from "@tanstack/charts-scales/ordinal"
-import { scalePoint } from "@tanstack/charts-scales/point"
+import { scaleBand } from "@tanstack/charts/scales/band"
+import { scaleLinear } from "@tanstack/charts/scales/linear"
+import { scaleOrdinal } from "@tanstack/charts/scales/ordinal"
+import { scalePoint } from "@tanstack/charts/scales/point"
 import { scaleUtc, scaleTime, scaleLog, scaleSqrt } from "d3-scale"
 import {
   curveLinear,
@@ -62,8 +62,8 @@ const SUPPORTED_SPEC_VERSION = 1
 // --- Registries (DD-001/DD-002) ---------------------------------------------
 
 /**
- * 1:1 cartesian marks. `pie` is handled separately: in 0.7.2 `pie()` is a slice
- * transform and the actual mark is `polar({marks:[radialArc(...)]})`.
+ * 1:1 cartesian marks. `pie` is handled separately: `pie()` is a slice transform
+ * and the actual mark is `polar({scales:{angle:null, radius:null}, marks:[radialArc(...)]})`.
  */
 const MARK_REGISTRY = {
   lineY,
@@ -84,8 +84,9 @@ const MARK_REGISTRY = {
 function makePieMark(rows, options) {
   const { value, label, padAngle, innerRadius, outerRadius, cornerRadius, id, ...rest } = options
   const sliceOptions = { value }
-  if (label !== undefined) sliceOptions.label = label
-  if (padAngle !== undefined) sliceOptions.padAngle = padAngle
+  // `pie()` materializes the gap in each slice interval (`gapAngle`); radialArc
+  // must not pad again, so the arc keeps the slice's own `padAngle` (always 0).
+  if (padAngle !== undefined) sliceOptions.gapAngle = padAngle
   const slices = pie(rows, sliceOptions)
   const arcOptions = {
     startAngle: "startAngle",
@@ -99,7 +100,13 @@ function makePieMark(rows, options) {
   if (innerRadius !== undefined) arcOptions.innerRadius = innerRadius
   if (outerRadius !== undefined) arcOptions.outerRadius = outerRadius
   if (cornerRadius !== undefined) arcOptions.cornerRadius = cornerRadius
-  return polar({ ...(id !== undefined ? { id } : {}), marks: [radialArc(slices, arcOptions)] })
+  return polar({
+    ...(id !== undefined ? { id } : {}),
+    // 1.x: both reserved polar scale entries are required; radialArc uses its own
+    // authored angles, so neither positional scale is used.
+    scales: { angle: null, radius: null },
+    marks: [radialArc(slices, arcOptions)],
+  })
 }
 
 const SUPPORTED_MARK_TYPES = new Set([...Object.keys(MARK_REGISTRY), "pie"])
@@ -225,9 +232,9 @@ function mapOptions(options) {
 // --- Definition (DD-001) -----------------------------------------------------
 
 /**
- * Scale inference: TanStack Charts 0.7.2 (the published version) requires a
- * configured scale per axis for every cartesian mark — without one, SSR/prerender
- * throws "Chart scale 'y' requires a configured scale". It is inferred from the
+ * Scale inference: TanStack Charts requires a configured scale per axis for every
+ * cartesian mark — without one, SSR/prerender throws "Chart scale 'y' requires a
+ * configured scale". It is inferred from the
  * first value of the axis channels: Date→utc, number→linear, string→band (if
  * there are bars/cells on that axis) or point.
  */
@@ -291,19 +298,16 @@ function buildDefinition(spec, problems) {
     marks.push(MARK_REGISTRY[mark.type](data, mapOptions(mark.options || {})))
   }
   if (!marks.length) return null
-  const definition = { marks }
-  const x = buildAxis(spec.x)
-  const y = buildAxis(spec.y)
-  if (x) definition.x = x
-  if (y) definition.y = y
+  // 1.x: positional scales live in the `scales` registry, and both reserved
+  // entries are mandatory (`null` when the chart has no cartesian marks).
+  const scales = { x: null, y: null }
   if (cartesianMarks.length) {
-    if (!definition.x?.scale) {
-      definition.x = { ...(definition.x || {}), scale: inferAxisScale(cartesianMarks, "x") }
-    }
-    if (!definition.y?.scale) {
-      definition.y = { ...(definition.y || {}), scale: inferAxisScale(cartesianMarks, "y") }
+    for (const axis of ["x", "y"]) {
+      const built = buildAxis(spec[axis]) || {}
+      scales[axis] = built.scale ? built : { ...built, scale: inferAxisScale(cartesianMarks, axis) }
     }
   }
+  const definition = { marks, scales }
   if (spec.color && spec.color.scale) {
     // REQ-CH-023
     const colorScale = makeScaleFactory(spec.color.scale)
@@ -319,7 +323,7 @@ function buildDefinition(spec, problems) {
     }
   }
   if (spec.tooltip) definition.tooltip = tooltip // REQ-CH-006
-  if (spec.animate) definition.animate = true // REQ-CH-007
+  if (spec.animate) definition.svgAnimation = true // REQ-CH-007 (`animate` in 0.x)
   return defineChart(definition)
 }
 

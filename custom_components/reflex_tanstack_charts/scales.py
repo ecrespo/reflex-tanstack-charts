@@ -2,7 +2,7 @@
 
 REQ: REQ-CH-004. Specs: specs/api/component-api-v1.md §2.3 ·
 specs/data-model/chartspec-schema.md §2.4.
-The bridge resolves them: compact (`@tanstack/charts-scales`) and advanced (`d3-scale`).
+The bridge resolves them: compact (`@tanstack/charts/scales/*`) and advanced (`d3-scale`).
 """
 
 from __future__ import annotations

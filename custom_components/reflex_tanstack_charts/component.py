@@ -16,10 +16,10 @@ import reflex as rx
 _TAG = "[reflex-tanstack-charts]"
 
 #: REQ-CH-020 / Constitution Art. 4 — exact versions verified against npm
-#: on 2026-08-07 (see Tech Design §10).
+#: on 2026-10-10 (see Tech Design §10). Since 1.0 the compact scales ship inside
+#: `@tanstack/charts` (`@tanstack/charts/scales/*`), so `charts-scales` is gone.
 LIB_DEPENDENCIES = [
-    "@tanstack/charts@0.7.2",
-    "@tanstack/charts-scales@0.7.2",
+    "@tanstack/charts@1.1.0",
     "d3-scale@4.0.2",
     "d3-shape@3.2.0",
 ]

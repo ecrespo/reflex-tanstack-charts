@@ -5,8 +5,8 @@ Custom [Reflex](https://reflex.dev) component wrapping
 and accessible chart grammar (SVG, keyboard focus, ~16 KiB gzip for a compact
 line chart). Declare charts 100% in Python; no JavaScript.
 
-> TanStack Charts is in **pre-alpha (0.7.2)**; the npm versions are pinned and
-> bumps go through a Delta Spec (see `specs/`).
+> Built on TanStack Charts **1.1.0** (stable since 1.0); the npm versions are pinned
+> and bumps go through a Delta Spec (see `specs/` and `changes/`).
 
 ## Installation
 
@@ -64,7 +64,7 @@ tanstack_chart(
 
 ## Scales
 
-`linear`, `band`, `point`, `ordinal` (compact ones from `@tanstack/charts-scales`)
+`linear`, `band`, `point`, `ordinal` (compact ones from `@tanstack/charts/scales/*`)
 and `utc`, `time`, `log`, `sqrt` (via `d3-scale`). Python `datetime`/`date` values
 are serialized to ISO-8601 and the bridge rehydrates them back to `Date`.
 

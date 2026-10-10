@@ -167,8 +167,7 @@ def test_req_ch_020_pinned_lib_dependencies():
     comp = tanstack_chart(marks=MARKS, aria_label="t")
     deps = set(comp.lib_dependencies)
     assert deps == {
-        "@tanstack/charts@0.7.2",
-        "@tanstack/charts-scales@0.7.2",
+        "@tanstack/charts@1.1.0",
         "d3-scale@4.0.2",
         "d3-shape@3.2.0",
     }

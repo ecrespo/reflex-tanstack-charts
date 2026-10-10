@@ -18,7 +18,7 @@ def quantize(rows, field, edges, colors, labels=None, out="bucket"):
     """Quantize a numeric field into ordinal buckets to color heatmaps.
 
     The v1 contract only exposes ordinal color scales (REQ-CH-023): in TanStack
-    0.7.2 `fill` is a literal CSS color and the data-driven channel is `color`,
+    Charts a string `fill` is a literal CSS color and the data-driven channel is `color`,
     which is painted with the chart's color scale. That is why heatmaps quantize
     here (data layer) and color by bucket.
 

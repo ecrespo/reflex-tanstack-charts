@@ -237,6 +237,7 @@ Every test cites its REQ in the name or docstring (Constitution Art. 6):
 
 - [x] 2026-08-07 — npm versions verified in the registry: `@tanstack/charts@0.7.2`, `@tanstack/react-charts@0.7.2`, `@tanstack/charts-scales@0.7.2`, `d3-scale@4.0.2`, `d3-shape@3.2.0` (curves). react-charts peer deps: react ^19.
 - [x] 2026-08-07 — Confirmed with the installed package: `pie` is exported from `@tanstack/charts/polar`; `tooltip` from `@tanstack/charts/tooltip`; the root exports `defineChart`, `barY`…`cell`, `text`, `d3Curve`.
+- [x] 2026-10-10 — Upgraded to `@tanstack/charts@1.1.0`; `charts-scales` folded into `@tanstack/charts/scales/*` (see `changes/2026-10-10-tanstack-charts-1.1/delta-spec.md` and finding 5).
 - [ ] Is 0.8 the minimum Reflex version with a stable `rx.asset(shared=True)`? Confirm in T-001 with the installed version.
 
 ## 11. Implementation Findings (2026-08-07, folded back from execution)
@@ -269,6 +270,13 @@ Every test cites its REQ in the name or docstring (Constitution Art. 6):
    `@tanstack/react-charts` removed from `LIB_DEPENDENCIES`. Trade-off: the
    prerender no longer emits SVG (containers that hydrate on the client). Verified
    with jsdom under two copies of React (11/11 cases).
+5. **1.x definition shape (Delta tanstack-charts-1.1, 2026-10-10).** Cartesian
+   scales moved from root `x`/`y` into a `scales: {x, y}` registry where both
+   reserved entries are mandatory (`null` for pure polar charts); `polar()` needs
+   `scales: {angle, radius}` (both `null` for pies); `animate` became
+   `svgAnimation`; the y grid no longer defaults to on. `pie()`'s gap option is
+   `gapAngle` (the bridge used to pass a non-existent `padAngle`). Scale
+   inference (finding 1) is still required.
 
 ---
 

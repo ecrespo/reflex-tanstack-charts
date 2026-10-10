@@ -32,7 +32,7 @@ CURVES = {
 
 #: Channels whose string value ALWAYS references a dataset field (Data Model §2.2).
 #: `color` is TanStack's data-driven color channel; `fill`/`stroke` are NOT listed
-#: here because in 0.7.2 they are literal CSS colors, never field names.
+#: here because as strings they are literal CSS colors, never field names.
 _FIELD_CHANNELS = {"x", "y", "y1", "y2", "z", "color", "text", "value", "label", "key"}
 
 Mark = dict[str, Any]
