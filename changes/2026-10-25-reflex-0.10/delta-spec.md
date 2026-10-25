@@ -29,7 +29,7 @@ publishing to PyPI on tags, running every action on Node 24.
 ### Node 24
 
 All actions are on majors whose runtime is `node24` (`actions/checkout@v7`,
-`actions/setup-node@v7`, `astral-sh/setup-uv@v10.3.2`,
+`actions/setup-node@v7`, `astral-sh/setup-uv@v10.3.2` (pinned to its commit SHA, as the only third-party action),
 `actions/upload-artifact@v7`). `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` is also set,
 and the demo build installs Node 24 with `setup-node`.
 
