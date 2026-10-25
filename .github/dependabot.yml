@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # Keeps the SHA-pinned third-party actions (and the first-party majors) current.
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
