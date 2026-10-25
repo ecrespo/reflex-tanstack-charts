@@ -1,6 +1,6 @@
 [project]
 name = "reflex-tanstack-charts"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reflex custom component wrapping TanStack Charts (typed, tree-shakable SVG chart grammar)"
 readme = "README.md"
 license = { text = "MIT" }
@@ -13,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["reflex>=0.8"]
+dependencies = ["reflex>=0.10.0"]
 
 [project.urls]
 Homepage = "https://github.com/ecrespo/reflex-tanstack-charts"

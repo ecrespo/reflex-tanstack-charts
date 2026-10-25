@@ -1,0 +1,67 @@
+name: Publish to PyPI
+
+# Release flow: merge develop -> main, then push a `vX.Y.Z` tag pointing at a
+# commit on main. The tag must match `version` in pyproject.toml.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  verify:
+    name: Verify tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Tag matches pyproject version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          echo "tag=$TAG pyproject=$VERSION"
+          test "$TAG" = "$VERSION"
+      - name: Tagged commit is on main
+        run: |
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+  publish:
+    name: Build and publish
+    needs: [ci, verify]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/reflex-tanstack-charts/
+    permissions:
+      contents: write # GitHub release
+      id-token: write # PyPI Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.2
+        with:
+          python-version: "3.13"
+      - run: uv build
+      - run: uvx twine check --strict dist/*
+      - name: Publish (Trusted Publishing, or PYPI_API_TOKEN if set)
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -n "$PYPI_API_TOKEN" ]; then
+            uv publish --token "$PYPI_API_TOKEN"
+          else
+            uv publish --trusted-publishing always
+          fi
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag

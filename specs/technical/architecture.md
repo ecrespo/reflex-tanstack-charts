@@ -147,7 +147,7 @@ layout), publishable on PyPI with uv.
 
 ```
 reflex-tanstack-charts/
-├── pyproject.toml                  # hatchling/uv_build; deps: reflex>=0.8
+├── pyproject.toml                  # hatchling/uv_build; deps: reflex>=0.10
 ├── README.md
 ├── LICENSE                          # Apache-2.0
 ├── specs/                           # SDD (this directory)
@@ -238,7 +238,7 @@ Every test cites its REQ in the name or docstring (Constitution Art. 6):
 - [x] 2026-08-07 — npm versions verified in the registry: `@tanstack/charts@0.7.2`, `@tanstack/react-charts@0.7.2`, `@tanstack/charts-scales@0.7.2`, `d3-scale@4.0.2`, `d3-shape@3.2.0` (curves). react-charts peer deps: react ^19.
 - [x] 2026-08-07 — Confirmed with the installed package: `pie` is exported from `@tanstack/charts/polar`; `tooltip` from `@tanstack/charts/tooltip`; the root exports `defineChart`, `barY`…`cell`, `text`, `d3Curve`.
 - [x] 2026-10-10 — Upgraded to `@tanstack/charts@1.1.0`; `charts-scales` folded into `@tanstack/charts/scales/*` (see `changes/2026-10-10-tanstack-charts-1.1/delta-spec.md` and finding 5).
-- [ ] Is 0.8 the minimum Reflex version with a stable `rx.asset(shared=True)`? Confirm in T-001 with the installed version.
+- [x] 2026-10-25 — Minimum Reflex raised to 0.10 (the latest release); `rx.asset(shared=True)` + `$/public` verified on 0.10.0 with `reflex export` and `reflex run` (see `changes/2026-10-25-reflex-0.10/delta-spec.md`).
 
 ## 11. Implementation Findings (2026-08-07, folded back from execution)
 

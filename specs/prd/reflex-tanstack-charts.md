@@ -257,7 +257,7 @@ scale for the series (`z`). *(Added by Analyze A-01.)*
 | `@tanstack/react-charts` | npm | TanStack | pre-alpha | High |
 | `@tanstack/charts-scales` | npm | TanStack | pre-alpha | Medium |
 | `d3-scale` | npm | d3 | stable | Low |
-| `reflex` ≥ 0.8 | PyPI | Reflex | stable | Low |
+| `reflex` ≥ 0.10 | PyPI | Reflex | stable | Low |
 
 ## 9. User Stories
 
