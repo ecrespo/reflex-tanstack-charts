@@ -1,12 +1,21 @@
 # reflex-tanstack-charts
 
+[![CI](https://github.com/ecrespo/reflex-tanstack-charts/actions/workflows/ci.yml/badge.svg)](https://github.com/ecrespo/reflex-tanstack-charts/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/reflex-tanstack-charts)](https://pypi.org/project/reflex-tanstack-charts/)
+[![Python](https://img.shields.io/pypi/pyversions/reflex-tanstack-charts)](https://pypi.org/project/reflex-tanstack-charts/)
+
 Custom [Reflex](https://reflex.dev) component wrapping
 [TanStack Charts](https://tanstack.com/charts/latest): a typed, layer-composable
 and accessible chart grammar (SVG, keyboard focus, ~16 KiB gzip for a compact
 line chart). Declare charts 100% in Python; no JavaScript.
 
-> Built on TanStack Charts **1.1.0** (stable since 1.0); the npm versions are pinned
-> and bumps go through a Delta Spec (see `specs/` and `changes/`).
+> Built on TanStack Charts **1.1.0** (stable since 1.0) and **Reflex ≥ 0.10**; the npm
+> versions are pinned and bumps go through a Delta Spec (see `specs/` and `changes/`).
+
+## Requirements
+
+- Python ≥ 3.12
+- Reflex ≥ 0.10.0 (tested with 0.10.0)
 
 ## Installation
 
@@ -115,6 +124,28 @@ uv sync
 uv run pytest
 uv run ruff check custom_components tests
 ```
+
+CI (`.github/workflows/ci.yml`) runs ruff, pytest on Python 3.12 and 3.13, the
+package build and the demo production build (Node 24) on every push and PR.
+
+## Releasing
+
+Publishing to PyPI is automated by `.github/workflows/publish.yml`:
+
+1. Bump `version` in `pyproject.toml` and `__version__` in
+   `custom_components/reflex_tanstack_charts/__init__.py` (CI checks they match).
+2. Merge `develop` into `main` through a PR with green CI.
+3. Tag the merge commit on `main` and push the tag:
+
+   ```bash
+   git checkout main && git pull
+   git tag -a v0.3.0 -m "reflex-tanstack-charts 0.3.0"
+   git push origin v0.3.0
+   ```
+
+The workflow checks that the tag matches the package version and is on `main`,
+reruns CI, publishes with PyPI Trusted Publishing (or a `PYPI_API_TOKEN` secret)
+and creates the GitHub release.
 
 ## License
 

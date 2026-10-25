@@ -62,7 +62,7 @@ Decided, not re-discussed per feature:
 | Area | Decision |
 |---|---|
 | Backend language | Python ≥ 3.12 (repo `.python-version`) |
-| Framework | Reflex ≥ 0.8 (custom component, `reflex component init/build`) |
+| Framework | Reflex ≥ 0.10 (custom component, `reflex component init/build`) |
 | Python manager | uv (Art. 1) |
 | Chart library | TanStack Charts 1.1.0 (`@tanstack/charts`, vanilla DOM host — DD-006) |
 | Compact scales | `@tanstack/charts/scales/*` (linear, band, point, ordinal) |
@@ -77,6 +77,7 @@ Decided, not re-discussed per feature:
 | Date | Article | Change | Reason | Approved by |
 |---|---|---|---|---|
 | 2026-08-07 | Stack (license) | Apache-2.0 → MIT | Author's pre-existing MIT LICENSE in the repo | Ernesto |
+| 2026-10-25 | Stack (framework) | Reflex ≥ 0.8 → ≥ 0.10 | Track the latest Reflex release (`changes/2026-10-25-reflex-0.10/delta-spec.md`) | Ernesto |
 
 ## Constitution check (use in every artifact)
 
